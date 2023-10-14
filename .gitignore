@@ -12,3 +12,8 @@
 /captures
 .externalNativeBuild
 .cxx
+backend/exported_models/data
+backend/exported_models/saved/variables/variables.data-00000-of-00001
+backend/exported_models/saved/variables/variables.index
+backend/exported_models/saved/fingerprint.pb
+backend/exported_models/saved/saved_model.pb
