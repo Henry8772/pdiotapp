@@ -38,6 +38,7 @@ dependencies:
   tflite_flutter:  ^0.9.0
   csv: ^5.1.0
   google_ml_kit: ^0.16.2
+  get: ^4.6.5
 
 dev_dependencies:
   flutter_test:
@@ -66,7 +67,7 @@ flutter:
     - assets/models/model_test.tflite
     - assets/models/model_cnn.tflite
     - assets/models/model_dense.tflite
-    - assets/data/Respeck_s2029523_Ascending stairs_Normal_clean_30-09-2023_22-05-37.csv
+    - assets/data/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

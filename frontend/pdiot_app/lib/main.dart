@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'My Flutter App',
       home: MyPage(), // Set MyPage as the home widget
+      debugShowCheckedModeBanner: false,
     );
   }
 }

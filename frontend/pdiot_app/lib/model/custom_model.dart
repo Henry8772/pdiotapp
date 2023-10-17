@@ -26,6 +26,12 @@ class CustomModel {
     'Standing',
     'Lying down on stomach'
   ];
+
+  List<String> motionList = [
+    'assets/data/Respeck_s2029523_Ascending stairs_Normal_clean_30-09-2023_22-05-37.csv',
+    'assets/data/Respeck_s2029523_Lying down back_Coughing_clean_30-09-2023_21-25-30.csv',
+    'assets/data/Respeck_s2029523_Sitting_Normal_unprocessed_30-09-2023_20-52-23.csv'
+  ];
   // IsolateInterpreter? isolateInterpreter;
 
   // Function to load the model
@@ -56,10 +62,9 @@ class CustomModel {
     }
   }
 
-  Future<List<List<dynamic>>> loadCsvData() async {
+  Future<List<List<dynamic>>> loadCsvData(int ind) async {
     // Adjust the path to your CSV file as needed
-    final String data = await rootBundle.loadString(
-        'assets/data/Respeck_s2029523_Ascending stairs_Normal_clean_30-09-2023_22-05-37.csv');
+    final String data = await rootBundle.loadString(motionList[ind]);
 
     // Parse the CSV data
     List<List<dynamic>> rowsAsListOfValues =
