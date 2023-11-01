@@ -11,5 +11,5 @@ def extract_activity_and_status(filename):
     activity = details[2]
     activity_sub = details[3]
     status = details[4]
-
+    
     return activity, activity_sub, status
