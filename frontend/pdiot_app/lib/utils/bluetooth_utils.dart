@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'dart:typed_data';
+import '../page/chart_controller.dart';
 
 class AccelerometerReading {
   final double x;
@@ -72,6 +73,7 @@ RESpeckRawPacket decodeIMUPacket(Uint8List values,
 }
 
 class BluetoothConnect {
+  late final ChartController chartController;
   final _ble = FlutterReactiveBle();
   List<DiscoveredDevice> _devicesList = [];
   late Stream<ConnectionStateUpdate> _connection;
@@ -83,6 +85,14 @@ class BluetoothConnect {
   final uuidRespeckLiveV4 = Uuid.parse("00001524-1212-efde-1523-785feabcd125");
   final uuidRespeckImu = Uuid.parse("00001527-1212-efde-1523-785feabcd125");
   final uuidRespeckService = Uuid.parse("00001523-1212-efde-1523-785feabcd125");
+
+  void Function(double accX, double accY, double accZ)? onDataReceived;
+
+  // Call this method from where you instantiate BluetoothUtils
+  void setOnDataReceivedCallback(
+      void Function(double accX, double accY, double accZ) callback) {
+    onDataReceived = callback;
+  }
 
   void connectToDevice(DiscoveredDevice device) {
     // Connect to the device
@@ -159,6 +169,8 @@ class BluetoothConnect {
       // For example:
       print('Accelerometer: ${imuPacket.sensorData.first.acc}');
       print('Gyroscope: ${imuPacket.sensorData.first.gyro}');
+      onDataReceived?.call(imuPacket.sensorData.first.acc.x,
+          imuPacket.sensorData.first.acc.y, imuPacket.sensorData.first.acc.z);
 
       // code to handle incoming data
     }, onError: (dynamic error) {

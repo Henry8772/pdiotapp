@@ -3,22 +3,19 @@ import 'dart:io';
 import 'package:get/get.dart';
 import 'dart:typed_data';
 import '../model/custom_model.dart';
-import '../utils/bluetooth_utils.dart';
 
-class MyPageController extends GetxController {
+class HomePageController extends GetxController {
   // Variables, and methods to manage the page's data and logic
 
   RxString output = "Waiting for result"
       .obs; // consider using RxString for reactive programming if you're using GetX.
   CustomModel? model; // Make model nullable
-  late BluetoothConnect bluetoothInstance;
 
   @override
   void onReady() {
     super.onReady();
     // Perform any initialization that needs to happen when the controller is first created
     load();
-    bluetoothInstance = BluetoothConnect();
   }
 
   Future<void> load() async {
@@ -29,14 +26,6 @@ class MyPageController extends GetxController {
       await model!
           .loadModel(); // model is nullable, so we should use the null-aware operator (!.)
     }
-  }
-
-  void connectBluetooth() {
-    if (bluetoothInstance == null) {
-      bluetoothInstance = BluetoothConnect();
-    }
-
-    bluetoothInstance.scanForDevices();
   }
 
   Future<void> buttonClicked(int ind) async {
