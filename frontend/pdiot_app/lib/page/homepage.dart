@@ -33,6 +33,14 @@ class _MyPageState extends State<MyPage> {
                 },
                 child: const Text('Motion Data 1'),
               ),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _controller.connectBluetooth();
+                  });
+                },
+                child: const Text('Bluetooth'),
+              ),
               SizedBox(height: 20), // spacing between buttons
               ElevatedButton(
                 onPressed: () {
