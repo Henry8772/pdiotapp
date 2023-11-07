@@ -126,7 +126,7 @@ class BluetoothConnect {
         print('Name: ${device.name}');
         print('Identifier: ${device.id}');
 
-        if (device.id == 'D4:20:D5:8D:A8:E9') {
+        if (device.id == 'D9:A7:42:37:ED:C3') {
           connectToDevice(device);
         }
       }

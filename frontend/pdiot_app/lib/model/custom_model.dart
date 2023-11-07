@@ -76,10 +76,47 @@ class CustomModel {
     return extractedData;
   }
 
+  // Future<List<Float32List>> prepareData(List<List<dynamic>> csvData) async {
+  //   // Select only the first 700 rows if there are more
+  //   List<List<dynamic>> selectedRows =
+  //       csvData.length > 700 ? csvData.sublist(1, 700 + 1) : csvData;
+
+  //   // Check if there are enough rows in the CSV data.
+  //   if (selectedRows.length != 700) {
+  //     throw Exception(
+  //         'Not enough data rows. Expected at least 700 rows of data.');
+  //   }
+
+  //   // Convert the CSV data into a flat list of doubles since the model input should be a Float32List.
+  //   List<Float32List> flatList = [];
+  //   for (var row in selectedRows) {
+  //     // Each row is expected to have exactly 3 columns.
+  //     if (row.length != 3) {
+  //       throw Exception('Expected exactly 3 columns for each row of data.');
+  //     }
+  //     List<double> tmpflatList = [];
+
+  //     for (var value in row) {
+  //       // Attempt to convert each value to a double and add it to the flat list.
+  //       try {
+  //         tmpflatList.add(double.parse(value.toString()));
+  //       } catch (error) {
+  //         throw Exception('Error in converting value to double: $error');
+  //       }
+  //     }
+  //     Float32List inputAsFloat32List = Float32List.fromList(tmpflatList);
+  //     flatList.add(inputAsFloat32List);
+  //   }
+
+  //   // The TensorFlow Lite interpreter expects a Float32List.
+
+  //   return flatList;
+  // }
+
   Future<List<Float32List>> prepareData(List<List<dynamic>> csvData) async {
     // Select only the first 700 rows if there are more
     List<List<dynamic>> selectedRows =
-        csvData.length > 700 ? csvData.sublist(1, 700 + 1) : csvData;
+        csvData.length > 50 ? csvData.sublist(1, 700 + 1) : csvData;
 
     // Check if there are enough rows in the CSV data.
     if (selectedRows.length != 700) {
