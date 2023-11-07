@@ -120,6 +120,10 @@ class _ChartPageState extends State<ChartPage> {
               onPressed: _controller.connectBluetooth,
               child: const Text('Connect to Bluetooth'),
             ),
+            ElevatedButton(
+              onPressed: _controller.load,
+              child: const Text('Load Model'),
+            ),
             Text("Result: ${_controller.output}")
           ],
         ),

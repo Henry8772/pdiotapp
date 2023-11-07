@@ -18,7 +18,8 @@ class ChartController with ChangeNotifier {
       "Waiting for result"; // consider using RxString for reactive programming if you're using GetX.
   CustomModel? model;
 
-  List<Float32List> acc = []; // Start with a dummy data point
+  List<Float32List> acc = [];
+// Start with a dummy data point
   Timer? _timer;
   double minY = 0;
   double maxY = 1;

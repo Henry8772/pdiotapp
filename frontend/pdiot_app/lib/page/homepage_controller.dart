@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'dart:io';
 import 'package:get/get.dart';
+import 'package:tflite_flutter/tflite_flutter.dart';
 import 'dart:typed_data';
 import '../model/custom_model.dart';
 
@@ -39,6 +40,7 @@ class HomePageController extends GetxController {
     List<List<dynamic>> csvData =
         await model!.loadCsvData(ind); // Using the null-aware operator
     List<Float32List> inputData = await model!.prepareData(csvData);
+
     String result = await model!.performInference(inputData);
 
     output.value =

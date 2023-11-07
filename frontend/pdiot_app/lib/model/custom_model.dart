@@ -49,7 +49,11 @@ class CustomModel {
       //   ),
       // );
       // var interpreterOptions = InterpreterOptions()..addDelegate(delegate);
-      interpreter = await Interpreter.fromAsset('models/model_dense.tflite');
+      interpreter = await Interpreter.fromAsset(
+        'models/model_online.tflite',
+        options: InterpreterOptions()..threads = 4,
+      );
+      interpreter?.allocateTensors();
       // Create interpreter options
 
       // Add the Flex delegate
@@ -116,10 +120,10 @@ class CustomModel {
   Future<List<Float32List>> prepareData(List<List<dynamic>> csvData) async {
     // Select only the first 700 rows if there are more
     List<List<dynamic>> selectedRows =
-        csvData.length > 50 ? csvData.sublist(1, 700 + 1) : csvData;
+        csvData.length > 50 ? csvData.sublist(1, 50 + 1) : csvData;
 
     // Check if there are enough rows in the CSV data.
-    if (selectedRows.length != 700) {
+    if (selectedRows.length != 50) {
       throw Exception(
           'Not enough data rows. Expected at least 700 rows of data.');
     }
@@ -151,17 +155,22 @@ class CustomModel {
   }
 
   // Function to perform inference
-  Future<String> performInference(inputData) async {
+  Future<String> performInference(List<Float32List> inputData) async {
     if (interpreter == null) {
       print('Model not loaded yet');
     }
 
     // The shape of your input data depends on your model. Adjust accordingly.
-    // var inputShape = interpreter!.getInputTensor(0).shape;
-    // var inputType = interpreter!.getInputTensor(0).type;
+    var inputShape = interpreter!.getInputTensor(0).shape;
+    var inputType = interpreter!.getInputTensor(0).type;
+    print(inputShape);
+
+    List<List<Float32List>> finalInputData = [inputData];
+    print(finalInputData.shape);
+    print(finalInputData);
 
     // // Depending on your model, you need to adjust the following parameters:
-    // var outputSize = interpreter!.getOutputTensor(0).shape;
+    var outputSize = interpreter!.getOutputTensor(0).shape;
 
     // print(outputSize);
     // Create a container for the result.
