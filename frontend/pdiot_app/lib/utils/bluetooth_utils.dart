@@ -141,9 +141,9 @@ class BluetoothConnect {
       for (final service in services) {
         for (final characteristic in service.characteristics) {
           // Check if this characteristic is one of the ones we want to subscribe to
-          if (characteristic.characteristicId == uuidRespeckLive ||
-              characteristic.characteristicId == uuidRespeckLiveV4 ||
-              characteristic.characteristicId == uuidRespeckImu) {
+          // characteristic.characteristicId == uuidRespeckLive ||
+          //     characteristic.characteristicId == uuidRespeckLiveV4 ||
+          if (characteristic.characteristicId == uuidRespeckImu) {
             // Subscribe to the characteristic
             subscribeToCharacteristic(
                 characteristic.characteristicId, deviceId);
