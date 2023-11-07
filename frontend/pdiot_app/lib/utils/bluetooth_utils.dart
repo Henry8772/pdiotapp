@@ -163,12 +163,12 @@ class BluetoothConnect {
         deviceId: deviceId);
 
     _ble.subscribeToCharacteristic(characteristic).listen((data) {
-      print('Received raw data from ${characteristic.characteristicId}: $data');
+      // print('Received raw data from ${characteristic.characteristicId}: $data');
       final imuPacket = decodeIMUPacket(Uint8List.fromList(data));
       // Now you can use imuPacket to access the accelerometer and gyroscope data
       // For example:
-      print('Accelerometer: ${imuPacket.sensorData.first.acc}');
-      print('Gyroscope: ${imuPacket.sensorData.first.gyro}');
+      // print('Accelerometer: ${imuPacket.sensorData.first.acc}');
+      // print('Gyroscope: ${imuPacket.sensorData.first.gyro}');
       onDataReceived?.call(imuPacket.sensorData.first.acc.x,
           imuPacket.sensorData.first.acc.y, imuPacket.sensorData.first.acc.z);
 

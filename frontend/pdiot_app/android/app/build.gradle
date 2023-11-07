@@ -74,7 +74,16 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "org.tensorflow:tensorflow-lite-select-tf-ops:+"
 
-
+    implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly-SNAPSHOT'
+    // This dependency adds the necessary TF op support.
+    implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:0.0.0-nightly-SNAPSHOT'
 }
+
+// dependencies {
+//     implementation 'org.tensorflow:tensorflow-lite:+'
+//     // implementation "org.tensorflow:tensorflow-tflite-builtins:+"
+//     implementation "org.tensorflow:tensorflow-lite-select-tf-ops:+"
+
+
+// }

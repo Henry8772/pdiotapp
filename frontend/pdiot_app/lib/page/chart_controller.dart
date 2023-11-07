@@ -64,8 +64,12 @@ class ChartController with ChangeNotifier {
       load();
     }
     List<Float32List> last2SecData = acc.sublist(acc.length - 50);
-
-    print('${last2SecData.length}, ${last2SecData[0].length}');
+    print("[");
+    for (Float32List floatList in last2SecData) {
+      // Convert the Float32List to a string and print it
+      print("[" + floatList.toString() + "],");
+    }
+    print("]");
 
     String result = await model!.performInference(last2SecData);
 
@@ -88,7 +92,7 @@ class ChartController with ChangeNotifier {
       accZ,
     ));
     acc.add(Float32List.fromList([accX, accY, accZ]));
-    if (acc.length % 3 == 0 && acc.length >= 50) {
+    if (acc.length % 25 == 0 && acc.length >= 50) {
       predictRealTime();
     }
 

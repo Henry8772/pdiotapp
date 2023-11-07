@@ -50,8 +50,9 @@ class CustomModel {
       // );
       // var interpreterOptions = InterpreterOptions()..addDelegate(delegate);
       interpreter = await Interpreter.fromAsset(
-        'models/model_online.tflite',
-        options: InterpreterOptions()..threads = 4,
+        'models/model_cnn.tflite',
+        // options: interpreterOptions
+        // options: InterpreterOptions()..threads = 4,
       );
       interpreter?.allocateTensors();
       // Create interpreter options
@@ -161,22 +162,18 @@ class CustomModel {
     }
 
     // The shape of your input data depends on your model. Adjust accordingly.
-    var inputShape = interpreter!.getInputTensor(0).shape;
-    var inputType = interpreter!.getInputTensor(0).type;
-    print(inputShape);
+    // var inputShape = interpreter!.getInputTensor(0).shape;
+    // var inputType = interpreter!.getInputTensor(0).type;
 
     List<List<Float32List>> finalInputData = [inputData];
-    print(finalInputData.shape);
-    print(finalInputData);
 
     // // Depending on your model, you need to adjust the following parameters:
-    var outputSize = interpreter!.getOutputTensor(0).shape;
 
     // print(outputSize);
     // Create a container for the result.
     var output = List.filled(1 * 12, 0).reshape([1, 12]);
 
-    interpreter!.run(inputData, output);
+    interpreter!.run(finalInputData, output);
 
     // Extracting the first row since the shape is [1, 12], we only have one row
     List<double> data = output[0];
@@ -188,6 +185,7 @@ class CustomModel {
         argMaxIndex = i; // update with the new index if a larger value is found
       }
     }
+    print(labelList[argMaxIndex]);
     return labelList[argMaxIndex]; // this output can be post-
   }
 }

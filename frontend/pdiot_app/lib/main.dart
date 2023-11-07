@@ -5,7 +5,7 @@ import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'page/homepage.dart';
 
 void main() {
-  runApp(const GetMaterialApp(
+  runApp(GetMaterialApp(
     debugShowCheckedModeBanner: false,
     themeMode: ThemeMode.light,
     home: MainPage(),
