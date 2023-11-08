@@ -3,9 +3,12 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 import '../model/custom_model.dart';
 import '../utils/bluetooth_utils.dart';
 import 'dart:io';
+
+import '../utils/file_utils.dart';
 
 class ChartController with ChangeNotifier {
   BluetoothConnect? bluetoothInstance;
@@ -13,6 +16,7 @@ class ChartController with ChangeNotifier {
   List<FlSpot> accXData = [FlSpot(0, 0)];
   List<FlSpot> accYData = [FlSpot(0, 0)];
   List<FlSpot> accZData = [FlSpot(0, 0)];
+  FileUtils fileUtilInstance = FileUtils();
 
   String output =
       "Waiting for result"; // consider using RxString for reactive programming if you're using GetX.
@@ -20,18 +24,38 @@ class ChartController with ChangeNotifier {
 
   List<Float32List> acc = [];
 // Start with a dummy data point
-  Timer? _timer;
   double minY = 0;
   double maxY = 1;
 
   DateTime? lastDataTimestamp;
   int dataCount = 0;
+  Timer? timer;
 
   void Function(double accX, double accY, double accZ)? onNewSensorData;
 
   void setOnNewSensorDataCallback(
       void Function(double accX, double accY, double accZ) callback) {
     onNewSensorData = callback;
+  }
+
+  void addDummyDataTest() {
+    const frequency = Duration(milliseconds: 40); // 25 Hz
+    timer = Timer.periodic(frequency, (Timer t) {
+      addDummyData();
+    });
+  }
+
+  void stopDummyDataTest() {
+    if (timer != null) {
+      timer!.cancel();
+      timer = null;
+      print('Dummy data generation stopped.');
+      DateTime now = DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd-kk:mm').format(now);
+      print(formattedDate);
+
+      fileUtilInstance.saveCsv(acc, formattedDate);
+    }
   }
 
   Future<void> load() async {
@@ -64,12 +88,6 @@ class ChartController with ChangeNotifier {
       load();
     }
     List<Float32List> last2SecData = acc.sublist(acc.length - 50);
-    print("[");
-    for (Float32List floatList in last2SecData) {
-      // Convert the Float32List to a string and print it
-      print("[" + floatList.toString() + "],");
-    }
-    print("]");
 
     String result = await model!.performInference(last2SecData);
 
@@ -114,37 +132,23 @@ class ChartController with ChangeNotifier {
     }
   }
 
-  // void _addDummyData() {
-  //   final random = math.Random();
-  //   // Generate dummy data
-  //   double nextAccX = random.nextDouble() * 10;
-  //   double nextGyroX = random.nextDouble() * 10;
+  void addDummyData() {
+    final random = math.Random();
+    double generateRandom() => -1.8 + random.nextDouble() * (3.6);
+    // Generate dummy data
+    double accX = generateRandom();
+    double accY = generateRandom();
+    double accZ = generateRandom();
+    // double gyroX = random.nextDouble() * 10;
+    // double gyroY = random.nextDouble() * 10;
+    // double gyriZ = random.nextDouble() * 10;
 
-  //   // Add new data points
-  //   accelerometerXData.add(FlSpot(
-  //     accelerometerXData.length.toDouble(),
-  //     nextAccX,
-  //   ));
-  //   gyroscopeXData.add(FlSpot(
-  //     gyroscopeXData.length.toDouble(),
-  //     nextGyroX,
-  //   ));
-
-  //   // Ensure only the last 15 data points are kept
-  //   if (accelerometerXData.length > 15) {
-  //     accelerometerXData.removeAt(0);
-  //   }
-  //   if (gyroscopeXData.length > 15) {
-  //     gyroscopeXData.removeAt(0);
-  //   }
-
-  //   // Notify listeners (in this case, the UI)
-  //   notifyListeners();
-  // }
+    addSensorData(accX, accY, accZ);
+  }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    timer?.cancel();
     super.dispose();
   }
 }

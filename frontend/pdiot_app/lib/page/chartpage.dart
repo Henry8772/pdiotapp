@@ -121,6 +121,14 @@ class _ChartPageState extends State<ChartPage> {
               child: const Text('Connect to Bluetooth'),
             ),
             ElevatedButton(
+              onPressed: _controller.addDummyDataTest,
+              child: const Text('Start'),
+            ),
+            ElevatedButton(
+              onPressed: _controller.stopDummyDataTest,
+              child: const Text('Stop'),
+            ),
+            ElevatedButton(
               onPressed: _controller.load,
               child: const Text('Load Model'),
             ),
