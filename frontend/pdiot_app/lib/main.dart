@@ -79,7 +79,14 @@ class _MainPageState extends State<MainPage> {
         items: [
           /// Medication
 
+          SalomonBottomBarItem(
+            icon: const Icon(Icons.account_box),
+            title: Text("Login", textScaleFactor: textScaleFactor),
+            selectedColor: Colors.purple,
+          ),
+
           /// Home
+
           SalomonBottomBarItem(
             icon: const Icon(Icons.home),
             title: Text("Home", textScaleFactor: textScaleFactor),
