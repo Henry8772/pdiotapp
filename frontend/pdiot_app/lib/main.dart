@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:pdiot_app/page/chartpage.dart';
+import 'package:pdiot_app/page/login_page.dart';
+import 'package:pdiot_app/utils/database_utils.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
+import 'model/current_user.dart';
 import 'page/homepage.dart';
 
 void main() {
-  runApp(GetMaterialApp(
-    debugShowCheckedModeBanner: false,
-    themeMode: ThemeMode.light,
-    home: MainPage(),
-  ));
+  runApp(
+    GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.light,
+      home: MainPage(),
+    ),
+  );
+  Get.put(CurrentUser());
+  DatabaseHelper.initDatabase();
 }
 
 class MainPage extends StatefulWidget {
@@ -41,11 +49,12 @@ class _MainPageState extends State<MainPage> {
   }
 
   final pages = [
+    LoginPage(),
     HomePage(),
     ChartPage(),
   ];
 
-  final pageTitles = ["Home", "Chart"];
+  final pageTitles = ["Login", "Home", "Chart"];
 
   @override
   Widget build(BuildContext context) {

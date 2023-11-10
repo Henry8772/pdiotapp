@@ -17,7 +17,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login/Register')),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -38,7 +37,8 @@ class _LoginPageState extends State<LoginPage> {
               child: Text('Login'),
             ),
             ElevatedButton(
-              onPressed: () => _register(),
+              onPressed: () => _controller.register(
+                  _usernameController.text, _usernameController.text),
               child: Text('Register'),
             ),
           ],
