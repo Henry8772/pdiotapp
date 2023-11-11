@@ -49,7 +49,7 @@ class Pref {
   // All the global settings variables
   static String userIdKey = 'userKey';
   static String fileNamesKey = 'fileNames'; // Key for the file names list
-  static String defaultUserId = 'ef8ede37-9626-4912-8939-ec0a9e91873c';
+  static String defaultUserId = '0';
   static ThemeData theme = ThemeData();
 
   // Save user ID to shared preferences

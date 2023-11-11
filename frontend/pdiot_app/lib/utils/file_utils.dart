@@ -28,7 +28,25 @@ class FileUtils {
     return months;
   }
 
-  // Write a function to load the current
+  static List<String> getUserDataTime() {
+    return CurrentUser.instance.userFiles
+        .map((file) => file.split('_'))
+        .where((parts) => parts.length > 1)
+        .map((parts) => parts[1])
+        .map((dateTime) => dateTime.split('-'))
+        .where((dateTimeParts) => dateTimeParts.length == 4)
+        .map((dateTimeParts) {
+          // Splitting the time part further to extract hours, minutes, and seconds
+          List<String> timeParts = dateTimeParts[3].split(':');
+          if (timeParts.length == 3) {
+            return '${timeParts[0]}:${timeParts[1]}:${timeParts[2]}';
+          } else {
+            return '';
+          }
+        })
+        .where((formattedDateTime) => formattedDateTime.isNotEmpty)
+        .toList();
+  }
 
   static DateTime parseDateFromFileName(String fileName) {
     // Adapted to match 'yyyy-MM-dd-kk:mm' format
@@ -64,8 +82,13 @@ class FileUtils {
     return userDirPath;
   }
 
-  static Future<void> saveCsv(List<Float32List> list, String fileName) async {
+  static Future<void> saveCsv(List<Float32List> list) async {
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd-kk:mm:ss').format(now);
     String csvData = listToCsv(list);
+
+    String fileName = "${CurrentUser.instance.id.value}_$formattedDate";
+    CurrentUser.instance.addFileName(fileName);
 
     // Get the user-specific directory path
     String userDirPath = await getUserDirectoryPath();

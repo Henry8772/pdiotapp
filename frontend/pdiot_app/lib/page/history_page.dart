@@ -51,10 +51,53 @@ class _PastDataPageState extends State<PastDataPage> {
     );
   }
 
+  void _handleBoxTap(int index) {
+    // Handle the tap event
+    print("Box $index tapped");
+    // Add any other actions you want to perform on tap
+  }
+
+  Widget _buildBox(String content, int index) {
+    return InkWell(
+      onTap: () => _handleBoxTap(index),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 8.0),
+        padding: EdgeInsets.all(10.0),
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min, // Add this
+          children: [
+            Text(
+              content,
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSlidableBoxGroup() {
+    return Container(
+      height: 100, // Adjust height as needed
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _controller.date_time.value.length,
+        itemBuilder: (BuildContext context, int index) {
+          return _buildBox(_controller.date_time.value[index], index);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+        body: Obx(
+      () => Column(
         children: <Widget>[
           ElevatedButton(
             onPressed: _pickDate,
@@ -86,12 +129,18 @@ class _PastDataPageState extends State<PastDataPage> {
               ),
             ),
           ),
+          _buildSlidableBoxGroup(),
           _buildRangeSelector(),
           buildChartBox('Accelerometer Data', selectedChartData),
+          ElevatedButton(
+            onPressed: _controller.refreshDateTime,
+            child: const Text('test'),
+          ),
+
           // Repeat for Gyroscope Data
         ],
       ),
-    );
+    ));
   }
 
   // Include _buildChartBox and other necessary methods

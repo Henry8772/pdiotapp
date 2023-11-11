@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'package:pdiot_app/model/current_user.dart';
 import '../model/custom_model.dart';
 import '../utils/bluetooth_utils.dart';
 // import 'dart:io';
@@ -49,11 +50,8 @@ class ChartController with ChangeNotifier {
       timer!.cancel();
       timer = null;
       print('Dummy data generation stopped.');
-      DateTime now = DateTime.now();
-      String formattedDate = DateFormat('yyyy-MM-dd-kk:mm').format(now);
-      print(formattedDate);
 
-      FileUtils.saveCsv(acc, formattedDate);
+      FileUtils.saveCsv(acc);
     }
   }
 

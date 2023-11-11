@@ -51,10 +51,11 @@ class _MainPageState extends State<MainPage> {
   final pages = [
     const LoginPage(),
     HomePage(),
+    ChartPage(),
     PastDataPage(),
   ];
 
-  final pageTitles = ["Login", "Home", "History"];
+  final pageTitles = ["Login", "Home", "Chart", "History"];
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +100,12 @@ class _MainPageState extends State<MainPage> {
           SalomonBottomBarItem(
             icon: const Icon(Icons.home),
             title: Text("Home", textScaleFactor: textScaleFactor),
+            selectedColor: Colors.purple,
+          ),
+
+          SalomonBottomBarItem(
+            icon: const Icon(Icons.home),
+            title: Text("Test", textScaleFactor: textScaleFactor),
             selectedColor: Colors.purple,
           ),
 
