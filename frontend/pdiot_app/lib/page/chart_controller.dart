@@ -6,7 +6,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../model/custom_model.dart';
 import '../utils/bluetooth_utils.dart';
-import 'dart:io';
+// import 'dart:io';
 
 import '../utils/file_utils.dart';
 
@@ -16,7 +16,6 @@ class ChartController with ChangeNotifier {
   List<FlSpot> accXData = [FlSpot(0, 0)];
   List<FlSpot> accYData = [FlSpot(0, 0)];
   List<FlSpot> accZData = [FlSpot(0, 0)];
-  FileUtils fileUtilInstance = FileUtils();
 
   String output =
       "Waiting for result"; // consider using RxString for reactive programming if you're using GetX.
@@ -54,7 +53,7 @@ class ChartController with ChangeNotifier {
       String formattedDate = DateFormat('yyyy-MM-dd-kk:mm').format(now);
       print(formattedDate);
 
-      fileUtilInstance.saveCsv(acc, formattedDate);
+      FileUtils.saveCsv(acc, formattedDate);
     }
   }
 
@@ -62,7 +61,7 @@ class ChartController with ChangeNotifier {
     if (model == null) {
       // Correct null comparison
       model =
-          await CustomModel(); // Assuming CustomModel's constructor is asynchronous
+          CustomModel(); // Assuming CustomModel's constructor is asynchronous
       await model!
           .loadModel(); // model is nullable, so we should use the null-aware operator (!.)
     }

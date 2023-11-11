@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'dart:typed_data';
 import '../page/chart_controller.dart';
@@ -75,11 +74,11 @@ RESpeckRawPacket decodeIMUPacket(Uint8List values,
 class BluetoothConnect {
   late final ChartController chartController;
   final _ble = FlutterReactiveBle();
-  List<DiscoveredDevice> _devicesList = [];
-  late Stream<ConnectionStateUpdate> _connection;
+  final List<DiscoveredDevice> _devicesList = [];
+  // late Stream<ConnectionStateUpdate> _connection;
   late Uuid serviceUuid;
-  late Uuid _characteristicUuid;
-  late DiscoveredDevice _connectedDevice;
+  // late Uuid _characteristicUuid;
+  // late DiscoveredDevice _connectedDevice;
 
   final uuidRespeckLive = Uuid.parse("00002010-0000-1000-8000-00805f9b34fb");
   final uuidRespeckLiveV4 = Uuid.parse("00001524-1212-efde-1523-785feabcd125");
@@ -121,7 +120,7 @@ class BluetoothConnect {
       _devicesList.add(device);
 
       // Check if the device name contains 'Res6AL'
-      if (device.name != null && device.name.contains('Res6AL')) {
+      if (device.name.contains('Res6AL')) {
         print('Found Bluetooth device with name containing "Res6AL":');
         print('Name: ${device.name}');
         print('Identifier: ${device.id}');

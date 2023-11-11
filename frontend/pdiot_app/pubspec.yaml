@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.19.2 <3.0.0'
+  sdk: '>=2.19.2 <3.1.6'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -43,9 +43,11 @@ dependencies:
   fl_chart: ^0.36.0
   salomon_bottom_bar: ^3.3.1
   path_provider: ^2.0.9
-  intl: ^0.17.0
+  intl: ^0.18.0
   sqflite: ^2.0.0+3
   shared_preferences:
+  syncfusion_flutter_charts: ^21.2.4
+  easy_date_timeline:
 
 
 dev_dependencies:

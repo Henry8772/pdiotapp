@@ -6,8 +6,10 @@ import 'package:path/path.dart';
 
 import 'package:path_provider/path_provider.dart';
 
+import '../model/current_user.dart';
+
 class FileUtils {
-  Future<List<String>> getFileMonths() async {
+  static Future<List<String>> getFileMonths() async {
     Directory directory = await getApplicationDocumentsDirectory();
     List<FileSystemEntity> files = directory.listSync();
     List<String> months = [];
@@ -26,14 +28,16 @@ class FileUtils {
     return months;
   }
 
-  DateTime parseDateFromFileName(String fileName) {
+  // Write a function to load the current
+
+  static DateTime parseDateFromFileName(String fileName) {
     // Adapted to match 'yyyy-MM-dd-kk:mm' format
     RegExp regExp = RegExp(r'\d{4}-\d{2}-\d{2}-\d{2}:\d{2}');
     String dateString = regExp.firstMatch(fileName)?.group(0) ?? '';
     return DateFormat('yyyy-MM-dd-kk:mm').parse(dateString);
   }
 
-  String listToCsv(List<Float32List> list) {
+  static String listToCsv(List<Float32List> list) {
     StringBuffer csvStringBuffer = StringBuffer();
     for (var floatList in list) {
       csvStringBuffer.writeln(floatList.join(','));
@@ -41,18 +45,47 @@ class FileUtils {
     return csvStringBuffer.toString();
   }
 
-  Future<void> saveCsv(List<Float32List> list, String fileName) async {
+  static Future<String> getUserDirectoryPath() async {
+    // Retrieve the application documents directory
+    Directory appDocDir = await getApplicationDocumentsDirectory();
+
+    // Assuming CurrentUser is a class with a static 'instance' property and 'id' field
+    String userId = CurrentUser.instance.id.value;
+
+    // Create a directory path for the user
+    String userDirPath = '${appDocDir.path}/$userId';
+
+    // Create the directory if it doesn't exist
+    Directory userDir = Directory(userDirPath);
+    if (!await userDir.exists()) {
+      await userDir.create(recursive: true);
+    }
+
+    return userDirPath;
+  }
+
+  static Future<void> saveCsv(List<Float32List> list, String fileName) async {
     String csvData = listToCsv(list);
-    Directory directory = await getApplicationDocumentsDirectory();
-    String filePath = '${directory.path}/$fileName.csv';
+
+    // Get the user-specific directory path
+    String userDirPath = await getUserDirectoryPath();
+
+    // Create the file path inside the user's directory
+    String filePath = '$userDirPath/$fileName.csv';
+
+    // Save the CSV file in the user's directory
     File file = File(filePath);
     await file.writeAsString(csvData);
     print('Data saved to $filePath');
   }
 
-  Future<List<Float32List>> parseCsv(String fileName) async {
-    Directory directory = await getApplicationDocumentsDirectory();
-    String filePath = '${directory.path}/$fileName.csv';
+  static Future<List<Float32List>> parseCsv(String fileName) async {
+    // Get the user-specific directory path
+    String userDirPath = await getUserDirectoryPath();
+
+    // Create the file path inside the user's directory
+    String filePath = '$userDirPath/$fileName.csv';
+
     File file = File(filePath);
     String fileContent = await file.readAsString();
     List<String> lines = fileContent.split('\n');

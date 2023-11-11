@@ -1,8 +1,4 @@
-import 'dart:ffi';
-import 'dart:io';
 import 'package:get/get.dart';
-import 'package:pdiot_app/utils/file_utils.dart';
-import 'package:tflite_flutter/tflite_flutter.dart';
 import 'dart:typed_data';
 import '../model/custom_model.dart';
 
@@ -24,7 +20,7 @@ class HomePageController extends GetxController {
     if (model == null) {
       // Correct null comparison
       model =
-          await CustomModel(); // Assuming CustomModel's constructor is asynchronous
+          CustomModel(); // Assuming CustomModel's constructor is asynchronous
       await model!
           .loadModel(); // model is nullable, so we should use the null-aware operator (!.)
     }

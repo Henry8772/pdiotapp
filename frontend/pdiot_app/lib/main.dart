@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:pdiot_app/page/chartpage.dart';
+import 'package:pdiot_app/page/history_page.dart';
 import 'package:pdiot_app/page/login_page.dart';
 import 'package:pdiot_app/utils/database_utils.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
@@ -10,7 +10,7 @@ import 'page/homepage.dart';
 
 void main() {
   runApp(
-    GetMaterialApp(
+    const GetMaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       home: MainPage(),
@@ -30,8 +30,8 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   var notifyHelper;
 
-  var _pageController = PageController(initialPage: 0); // Moved to here
-  var _currentIndex = 0;
+  final _pageController = PageController(initialPage: 1); // Moved to here
+  var _currentIndex = 1;
 
   @override
   void initState() {
@@ -49,12 +49,12 @@ class _MainPageState extends State<MainPage> {
   }
 
   final pages = [
-    LoginPage(),
+    const LoginPage(),
     HomePage(),
-    ChartPage(),
+    PastDataPage(),
   ];
 
-  final pageTitles = ["Login", "Home", "Chart"];
+  final pageTitles = ["Login", "Home", "History"];
 
   @override
   Widget build(BuildContext context) {
@@ -71,13 +71,13 @@ class _MainPageState extends State<MainPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text("Real-time Motion prediciton")),
+      appBar: AppBar(title: const Text("Real-time Motion prediciton")),
       body: PageView.builder(
         controller: _pageController, // Use the instance variable here
         onPageChanged: (int index) {
           setState(() => _currentIndex = index % pages.length);
         },
-        physics: BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         itemBuilder: (BuildContext context, int index) {
           return pages[index % pages.length];
         },

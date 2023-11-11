@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:get/get.dart';
 import 'chart_controller.dart';
 
 class ChartPage extends StatefulWidget {
+  const ChartPage({super.key});
+
   @override
   _ChartPageState createState() => _ChartPageState();
 }

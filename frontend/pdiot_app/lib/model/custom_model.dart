@@ -6,7 +6,6 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 // import 'package:tflite_flutter_helper/tflite_flutter_helper.dart';
 
 import 'package:csv/csv.dart';
-import 'dart:convert';
 
 class CustomModel {
   Interpreter? interpreter;
