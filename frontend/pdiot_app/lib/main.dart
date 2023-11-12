@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pdiot_app/page/activity_history_page.dart';
 import 'package:pdiot_app/page/chartpage.dart';
 import 'package:pdiot_app/page/history_page.dart';
 import 'package:pdiot_app/page/login_page.dart';
+import 'package:pdiot_app/page/settings_page.dart';
 import 'package:pdiot_app/utils/database_utils.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'model/current_user.dart';
@@ -51,11 +53,12 @@ class _MainPageState extends State<MainPage> {
   final pages = [
     const LoginPage(),
     HomePage(),
-    ChartPage(),
-    PastDataPage(),
+    // ChartPage(),
+    ActivitiHistoryPage(),
+    SettingsPage(),
   ];
 
-  final pageTitles = ["Login", "Home", "Chart", "History"];
+  final pageTitles = ["Login", "Home", "History", "Settings"];
 
   @override
   Widget build(BuildContext context) {
@@ -110,8 +113,8 @@ class _MainPageState extends State<MainPage> {
           ),
 
           SalomonBottomBarItem(
-            icon: const Icon(Icons.medication),
-            title: Text("Chart", textScaleFactor: textScaleFactor),
+            icon: const Icon(Icons.settings),
+            title: Text("Settings", textScaleFactor: textScaleFactor),
             selectedColor: Colors.red,
           ),
         ],

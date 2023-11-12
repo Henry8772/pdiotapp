@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:pdiot_app/utils/database_utils.dart';
+
+import '../utils/ui_utils.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../utils/ui_utils.dart';
+import 'package:pdiot_app/page/homepage_controller.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -11,10 +14,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<SensorData> chartData = [];
-  List<SensorData> gyroData = []; // List for gyroscope data
-  bool isRecording = false;
-  Timer? timer;
+  HomePageController _controller = HomePageController();
 
   @override
   void initState() {
@@ -29,9 +29,15 @@ class _HomePageState extends State<HomePage> {
             SensorData(index, randomValue(), randomValue(), randomValue()));
   }
 
+  List<SensorData> chartData = [];
+  List<SensorData> gyroData = []; // L
+  Timer? timer;
   double randomValue() => Random().nextDouble() * 100;
+  Map<String, int> currentSessionActivities = {};
+  DateTime startTime = DateTime.now();
 
   void startRecording() {
+    startTime = DateTime.now();
     timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
       setState(() {
         chartData.add(SensorData(
@@ -43,12 +49,28 @@ class _HomePageState extends State<HomePage> {
           chartData.removeAt(0);
           gyroData.removeAt(0);
         }
+        String activity = _controller.getRandomActivity();
+        print(activity);
+        if (currentSessionActivities[activity] == null) {
+          currentSessionActivities[activity] = 1;
+        } else {
+          currentSessionActivities[activity] =
+              currentSessionActivities[activity]! + 1;
+        }
+        print(currentSessionActivities[activity]);
       });
     });
   }
 
-  void stopRecording() {
+  void stopRecording() async {
     timer?.cancel();
+    await _controller.saveSessionToDatabase(
+        currentSessionActivities, startTime);
+    currentSessionActivities.clear();
+    var result = await DatabaseHelper.getSessions();
+
+    var result_today = await DatabaseHelper.getTimeSpentOnActivitiesToday();
+    print(result_today);
   }
 
   @override
@@ -70,11 +92,13 @@ class _HomePageState extends State<HomePage> {
               CupertinoButton.filled(
                 onPressed: () {
                   setState(() {
-                    isRecording = !isRecording;
-                    isRecording ? startRecording() : stopRecording();
+                    _controller.isRecording = !_controller.isRecording;
+                    _controller.isRecording
+                        ? startRecording()
+                        : stopRecording();
                   });
                 },
-                child: Text(isRecording ? 'Stop' : 'Start'),
+                child: Text(_controller.isRecording ? 'Stop' : 'Start'),
               ),
             ],
           ),
@@ -87,7 +111,7 @@ class _HomePageState extends State<HomePage> {
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
-        "Current Motion: ${isRecording ? 'Recording...' : 'Stopped'}",
+        "Current Motion: ${_controller.isRecording ? 'Recording...' : 'Stopped'}",
         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
       ),
     );

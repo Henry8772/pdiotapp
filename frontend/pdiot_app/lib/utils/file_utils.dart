@@ -11,10 +11,8 @@ import '../model/current_user.dart';
 
 class FileUtils {
   static List<String> getUserDataTime(String day) {
-    print("111");
     print(CurrentUser.instance.userFiles);
     List<String> dateSplit = day.split("-");
-    print(dateSplit);
 
     return CurrentUser.instance.userFiles
         .map((file) => file.split('-'))
@@ -33,7 +31,6 @@ class FileUtils {
     list.asMap().forEach((index, floatList) {
       // Prepend the current index to each line
       String line = "$index,${floatList.join(',')}";
-      print(line);
       csvStringBuffer.writeln(line);
     });
     return csvStringBuffer.toString();
@@ -118,7 +115,6 @@ class FileUtils {
 
       List<SensorData> sensorDataList = lines.map((line) {
         List<String> values = line.split(',');
-        print(values);
         // Assuming the CSV format is: time, xAxis, yAxis, zAxis
         int time = int.parse(values[0].trim());
         double xAxis = double.parse(values[1].trim());

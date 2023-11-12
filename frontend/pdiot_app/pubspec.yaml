@@ -48,6 +48,7 @@ dependencies:
   shared_preferences:
   syncfusion_flutter_charts: ^21.2.4
   easy_date_timeline:
+  syncfusion_flutter_datepicker: ^21.2.10
 
 
 dev_dependencies:
