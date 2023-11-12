@@ -23,7 +23,7 @@ class CurrentUser extends GetxController {
   Future<void> loadUserFiles() async {
     List<String> allFiles = await Pref.getFileNames();
     userFiles =
-        allFiles.where((file) => file.startsWith('${id.value}_')).toList();
+        allFiles.where((file) => file.startsWith('${id.value}-')).toList();
   }
 
   void setId(String newId) {
@@ -39,7 +39,7 @@ class CurrentUser extends GetxController {
     await Pref.saveFileNames(allFiles);
 
     // Update local userFiles list if the new file is related to the current user
-    if (newFileName.startsWith('${id.value}_')) {
+    if (newFileName.startsWith('${id.value}-')) {
       userFiles.add(newFileName);
     }
   }

@@ -3,6 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:pdiot_app/page/homepage.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+class SensorData {
+  final int time;
+  final double xAxis;
+  final double yAxis;
+  final double zAxis;
+
+  SensorData(this.time, this.xAxis, this.yAxis, this.zAxis);
+}
+
 Widget buildChartBox(String title, List<SensorData> data) {
   return Container(
     height: 200, // Fixed height for the chart container

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:pdiot_app/page/history_controller.dart';
 import 'package:pdiot_app/page/homepage.dart';
 import 'package:pdiot_app/utils/ui_utils.dart';
@@ -13,7 +14,6 @@ class PastDataPage extends StatefulWidget {
 class _PastDataPageState extends State<PastDataPage> {
   DateTime selectedDate = DateTime.now();
   final HistoryController _controller = Get.put(HistoryController()); //
-  List<SensorData> selectedChartData = [];
   RangeValues selectedRange = RangeValues(0, 100);
 
   @override
@@ -32,10 +32,14 @@ class _PastDataPageState extends State<PastDataPage> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
+        String day = DateFormat('yyyy-MM-dd-kk').format(selectedDate);
+        _controller.changeCurrentDay(day);
         // Update selectedChartData based on picked date
       });
     }
   }
+
+  void changeDateTime(int ind) async {}
 
   Widget _buildRangeSelector() {
     return RangeSlider(
@@ -52,9 +56,11 @@ class _PastDataPageState extends State<PastDataPage> {
   }
 
   void _handleBoxTap(int index) {
-    // Handle the tap event
-    print("Box $index tapped");
-    // Add any other actions you want to perform on tap
+    _controller.refreshDateTime();
+    _controller.loadData(index);
+    setState(() {
+      // This will rebuild the widget with updated data
+    });
   }
 
   Widget _buildBox(String content, int index) {
@@ -131,7 +137,7 @@ class _PastDataPageState extends State<PastDataPage> {
           ),
           _buildSlidableBoxGroup(),
           _buildRangeSelector(),
-          buildChartBox('Accelerometer Data', selectedChartData),
+          buildChartBox('Accelerometer Data', _controller.accData),
           ElevatedButton(
             onPressed: _controller.refreshDateTime,
             child: const Text('test'),

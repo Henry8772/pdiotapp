@@ -99,12 +99,3 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 }
-
-class SensorData {
-  final int time;
-  final double xAxis;
-  final double yAxis;
-  final double zAxis;
-
-  SensorData(this.time, this.xAxis, this.yAxis, this.zAxis);
-}

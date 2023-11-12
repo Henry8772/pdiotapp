@@ -86,9 +86,9 @@ class ChartController with ChangeNotifier {
     }
     List<Float32List> last2SecData = acc.sublist(acc.length - 50);
 
-    String result = await model!.performInference(last2SecData);
+    // String result = await model!.performInference(last2SecData);
 
-    output = result;
+    // output = result;
   }
 
   void addSensorData(double accX, double accY, double accZ) {

@@ -5,61 +5,37 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 
 import 'package:path_provider/path_provider.dart';
+import 'package:pdiot_app/utils/ui_utils.dart';
 
 import '../model/current_user.dart';
 
 class FileUtils {
-  static Future<List<String>> getFileMonths() async {
-    Directory directory = await getApplicationDocumentsDirectory();
-    List<FileSystemEntity> files = directory.listSync();
-    List<String> months = [];
+  static List<String> getUserDataTime(String day) {
+    print("111");
+    print(CurrentUser.instance.userFiles);
+    List<String> dateSplit = day.split("-");
+    print(dateSplit);
 
-    for (FileSystemEntity file in files) {
-      if (file is File) {
-        // Extract the date part from the filename
-        String fileName = basename(file.path);
-        DateTime fileDate = parseDateFromFileName(fileName);
-
-        // Format the month and add to the list
-        String month = DateFormat('MMMM').format(fileDate);
-        months.add(month);
-      }
-    }
-    return months;
-  }
-
-  static List<String> getUserDataTime() {
     return CurrentUser.instance.userFiles
-        .map((file) => file.split('_'))
-        .where((parts) => parts.length > 1)
-        .map((parts) => parts[1])
-        .map((dateTime) => dateTime.split('-'))
-        .where((dateTimeParts) => dateTimeParts.length == 4)
-        .map((dateTimeParts) {
-          // Splitting the time part further to extract hours, minutes, and seconds
-          List<String> timeParts = dateTimeParts[3].split(':');
-          if (timeParts.length == 3) {
-            return '${timeParts[0]}:${timeParts[1]}:${timeParts[2]}';
-          } else {
-            return '';
-          }
-        })
-        .where((formattedDateTime) => formattedDateTime.isNotEmpty)
+        .map((file) => file.split('-'))
+        .where((parts) =>
+            parts.length > 4 &&
+            parts[1] == dateSplit[0] && // Year
+            parts[2] == dateSplit[1] && // Month
+            parts[3] == dateSplit[2]) // Day
+        .map((parts) => parts[4]) // Extracting the time part
+        .where((timePart) => timePart.isNotEmpty)
         .toList();
-  }
-
-  static DateTime parseDateFromFileName(String fileName) {
-    // Adapted to match 'yyyy-MM-dd-kk:mm' format
-    RegExp regExp = RegExp(r'\d{4}-\d{2}-\d{2}-\d{2}:\d{2}');
-    String dateString = regExp.firstMatch(fileName)?.group(0) ?? '';
-    return DateFormat('yyyy-MM-dd-kk:mm').parse(dateString);
   }
 
   static String listToCsv(List<Float32List> list) {
     StringBuffer csvStringBuffer = StringBuffer();
-    for (var floatList in list) {
-      csvStringBuffer.writeln(floatList.join(','));
-    }
+    list.asMap().forEach((index, floatList) {
+      // Prepend the current index to each line
+      String line = "$index,${floatList.join(',')}";
+      print(line);
+      csvStringBuffer.writeln(line);
+    });
     return csvStringBuffer.toString();
   }
 
@@ -87,7 +63,7 @@ class FileUtils {
     String formattedDate = DateFormat('yyyy-MM-dd-kk:mm:ss').format(now);
     String csvData = listToCsv(list);
 
-    String fileName = "${CurrentUser.instance.id.value}_$formattedDate";
+    String fileName = "${CurrentUser.instance.id.value}-$formattedDate";
     CurrentUser.instance.addFileName(fileName);
 
     // Get the user-specific directory path
@@ -102,26 +78,61 @@ class FileUtils {
     print('Data saved to $filePath');
   }
 
-  static Future<List<Float32List>> parseCsv(String fileName) async {
-    // Get the user-specific directory path
-    String userDirPath = await getUserDirectoryPath();
+  // static Future<List<Float32List>> parseCsv(String fileName) async {
+  //   String userDirPath = await getUserDirectoryPath();
+  //   String filePath = '$userDirPath/$fileName.csv';
 
-    // Create the file path inside the user's directory
+  //   File file = File(filePath);
+  //   try {
+  //     String fileContent = await file.readAsString();
+  //     List<String> lines =
+  //         fileContent.split('\n').where((line) => line.isNotEmpty).toList();
+
+  //     List<Float32List> list = lines.map((line) {
+  //       List<String> strings = line.split(',');
+  //       Float32List floats = Float32List(strings.length);
+  //       for (int i = 0; i < strings.length; i++) {
+  //         floats[i] =
+  //             double.parse(strings[i].trim()); // Trim to remove any whitespace
+  //       }
+  //       return floats;
+  //     }).toList();
+
+  //     return list;
+  //   } catch (e) {
+  //     // Handle exceptions, like file read errors or parse errors
+  //     print('Error reading or parsing file: $e');
+  //     return []; // or rethrow the exception
+  //   }
+  // }
+
+  static Future<List<SensorData>> parseCsv(String fileName) async {
+    String userDirPath = await getUserDirectoryPath();
     String filePath = '$userDirPath/$fileName.csv';
 
     File file = File(filePath);
-    String fileContent = await file.readAsString();
-    List<String> lines = fileContent.split('\n');
+    try {
+      String fileContent = await file.readAsString();
+      List<String> lines =
+          fileContent.split('\n').where((line) => line.isNotEmpty).toList();
 
-    List<Float32List> list = lines.map((line) {
-      List<String> strings = line.split(',');
-      Float32List floats = Float32List(strings.length);
-      for (int i = 0; i < strings.length; i++) {
-        floats[i] = double.parse(strings[i]);
-      }
-      return floats;
-    }).toList();
+      List<SensorData> sensorDataList = lines.map((line) {
+        List<String> values = line.split(',');
+        print(values);
+        // Assuming the CSV format is: time, xAxis, yAxis, zAxis
+        int time = int.parse(values[0].trim());
+        double xAxis = double.parse(values[1].trim());
+        double yAxis = double.parse(values[2].trim());
+        double zAxis = double.parse(values[3].trim());
 
-    return list;
+        return SensorData(time, xAxis, yAxis, zAxis);
+      }).toList();
+
+      return sensorDataList;
+    } catch (e) {
+      // Handle exceptions, like file read errors or parse errors
+      print('Error reading or parsing file: $e');
+      return []; // or rethrow the exception
+    }
   }
 }
