@@ -17,7 +17,7 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
   String _selectedTimeframe = 'Day';
   DateTime _selectedDateTime = DateTime.now();
 
-  final List<String> _timeframeOptions = ['Day', 'Week', 'Month'];
+  final List<String> _timeframeOptions = ['Day', 'This Week', 'This Month'];
 
   final List<Color> pieColors = [
     Colors.red, Colors.green, Colors.blue, Colors.orange,
@@ -48,31 +48,7 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            EasyDateTimeLine(
-              initialDate: _selectedDateTime,
-              onDateChange: (selectedDate) {
-                changeDateTime(selectedDate);
-              },
-              dayProps: const EasyDayProps(
-                height: 56.0,
-                width: 56.0,
-                dayStructure: DayStructure.dayNumDayStr,
-                inactiveDayStyle: DayStyle(
-                  borderRadius: 48.0,
-                  dayNumStyle: TextStyle(fontSize: 18.0),
-                ),
-                activeDayStyle: DayStyle(
-                  dayNumStyle: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                ),
-              ),
-              headerProps: const EasyHeaderProps(
-                monthPickerType: MonthPickerType.switcher,
-                selectedDateFormat: SelectedDateFormat.fullDateDMY,
-              ),
-            ),
+            dateTimeLinePicker(),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.0),
               child: Row(
@@ -93,9 +69,9 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
                         DateTime endTime = DateTime.now();
                         DateTime startTime;
 
-                        if (_selectedTimeframe == 'Week') {
+                        if (_selectedTimeframe == 'This Week') {
                           startTime = endTime.subtract(Duration(days: 7));
-                        } else if (_selectedTimeframe == 'Month') {
+                        } else if (_selectedTimeframe == 'This Month') {
                           startTime = DateTime(
                               endTime.year, endTime.month - 1, endTime.day);
                         } else {
@@ -160,6 +136,60 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
         ),
       ),
     );
+  }
+
+  void _onWeekSelected(DateTime startOfWeek, DateTime endOfWeek) async {
+    setState(() {
+      _selectedDateTime = startOfWeek;
+    });
+
+    var activitiesRange = await DatabaseHelper.getTimeSpentOnActivitiesInRange(
+        startOfWeek, endOfWeek);
+    setState(() {
+      activities = activitiesRange;
+    });
+  }
+
+  void _onMonthSelected(DateTime startOfMonth, DateTime endOfMonth) async {
+    setState(() {
+      _selectedDateTime = startOfMonth;
+    });
+
+    var activitiesRange = await DatabaseHelper.getTimeSpentOnActivitiesInRange(
+        startOfMonth, endOfMonth);
+    setState(() {
+      activities = activitiesRange;
+    });
+  }
+
+  Widget dateTimeLinePicker() {
+    if (_selectedTimeframe == "Day") {
+      return EasyDateTimeLine(
+        initialDate: _selectedDateTime,
+        onDateChange: (selectedDate) {
+          changeDateTime(selectedDate);
+        },
+        dayProps: const EasyDayProps(
+          height: 56.0,
+          width: 56.0,
+          dayStructure: DayStructure.dayNumDayStr,
+          inactiveDayStyle: DayStyle(
+            borderRadius: 48.0,
+            dayNumStyle: TextStyle(fontSize: 18.0),
+          ),
+          activeDayStyle: DayStyle(
+            dayNumStyle: TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.white),
+          ),
+        ),
+        headerProps: const EasyHeaderProps(
+          selectedDateFormat: SelectedDateFormat.fullDateDMY,
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   String formatDuration(int seconds) {
