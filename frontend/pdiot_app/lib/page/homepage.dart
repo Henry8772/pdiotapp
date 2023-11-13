@@ -50,14 +50,12 @@ class _HomePageState extends State<HomePage> {
           gyroData.removeAt(0);
         }
         String activity = _controller.getRandomActivity();
-        print(activity);
         if (currentSessionActivities[activity] == null) {
           currentSessionActivities[activity] = 1;
         } else {
           currentSessionActivities[activity] =
               currentSessionActivities[activity]! + 1;
         }
-        print(currentSessionActivities[activity]);
       });
     });
   }
@@ -67,10 +65,15 @@ class _HomePageState extends State<HomePage> {
     await _controller.saveSessionToDatabase(
         currentSessionActivities, startTime);
     currentSessionActivities.clear();
-    var result = await DatabaseHelper.getSessions();
+    // var result = await DatabaseHelper.getSessions();
 
-    var result_today = await DatabaseHelper.getTimeSpentOnActivitiesToday();
-    print(result_today);
+    // var result_today = await DatabaseHelper.getTimeSpentOnActivitiesByDay();
+    // print("Result today");
+    // print(result_today);
+
+    // var result_week = await DatabaseHelper.getTimeSpentOnActivitiesToday();
+    // print("Result today");
+    // print(result_today);
   }
 
   @override

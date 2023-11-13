@@ -14,141 +14,150 @@ class ActivitiHistoryPage extends StatefulWidget {
 class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
   Map<String, int> activities = {};
   //There will be 12 acitivities, remember to leave space in ui
-  late DateTime _startDate, _endDate;
   String _selectedTimeframe = 'Day';
+  DateTime _selectedDateTime = DateTime.now();
 
   final List<String> _timeframeOptions = ['Day', 'Week', 'Month'];
+
+  final List<Color> pieColors = [
+    Colors.red, Colors.green, Colors.blue, Colors.orange,
+    Colors.purple, Colors.pink, Colors.yellow, Colors.cyan,
+    Colors.brown, Colors.grey, Colors.lime, Colors.indigo,
+    // Add more colors if you have more than 12 activities
+  ];
 
   @override
   void initState() {
     super.initState();
-    _loadTodayActivities();
+    _loadActivities();
   }
 
-  void _loadTodayActivities() async {
-    // var todayActivities = await DatabaseHelper.getTimeSpentOnActivitiesToday();
+  void _loadActivities() async {
+    var todayActivities =
+        await DatabaseHelper.getTimeSpentOnActivitiesByDay(_selectedDateTime);
     // var result = await DatabaseHelper.getSessionActivities();
     // var result1 = await DatabaseHelper.getActivities();
     setState(() {
-      activities = {
-        'Running': 3600,
-        'Reading': 1800,
-        // Add more activities here
-      };
+      activities = todayActivities;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          EasyDateTimeLine(
-            initialDate: DateTime.now(),
-            onDateChange: (selectedDate) {
-              changeDateTime(selectedDate);
-              //`selectedDate` the new date selected.
-            },
-            dayProps: const EasyDayProps(
-              height: 56.0,
-              width: 56.0,
-              dayStructure: DayStructure.dayNumDayStr,
-              inactiveDayStyle: DayStyle(
-                borderRadius: 48.0,
-                dayNumStyle: TextStyle(
-                  fontSize: 18.0,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            EasyDateTimeLine(
+              initialDate: _selectedDateTime,
+              onDateChange: (selectedDate) {
+                changeDateTime(selectedDate);
+              },
+              dayProps: const EasyDayProps(
+                height: 56.0,
+                width: 56.0,
+                dayStructure: DayStructure.dayNumDayStr,
+                inactiveDayStyle: DayStyle(
+                  borderRadius: 48.0,
+                  dayNumStyle: TextStyle(fontSize: 18.0),
+                ),
+                activeDayStyle: DayStyle(
+                  dayNumStyle: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
               ),
-              activeDayStyle: DayStyle(
-                dayNumStyle: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white),
+              headerProps: const EasyHeaderProps(
+                monthPickerType: MonthPickerType.switcher,
+                selectedDateFormat: SelectedDateFormat.fullDateDMY,
               ),
             ),
-            headerProps: const EasyHeaderProps(
-              // showHeader: false,
-              monthPickerType: MonthPickerType.switcher,
-              selectedDateFormat: SelectedDateFormat.fullDateDMY,
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment
-                  .spaceBetween, // This will align the children to opposite ends
-              children: [
-                const Text(
-                  'Show data as:', // Text aligned to the left
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                DropdownButton<String>(
-                  value: _selectedTimeframe,
-                  onChanged: (String? newValue) async {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedTimeframe = newValue;
-                      });
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Show data as:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  DropdownButton<String>(
+                    value: _selectedTimeframe,
+                    onChanged: (String? newValue) async {
+                      if (newValue != null) {
+                        setState(() {
+                          _selectedTimeframe = newValue;
+                        });
 
-                      DateTime endTime = DateTime.now();
-                      DateTime startTime;
+                        DateTime endTime = DateTime.now();
+                        DateTime startTime;
 
-                      // Determine the start time based on the selected timeframe
-                      if (_selectedTimeframe == 'Week') {
-                        startTime = endTime.subtract(Duration(days: 7));
-                      } else if (_selectedTimeframe == 'Month') {
-                        startTime = DateTime(
-                            endTime.year, endTime.month - 1, endTime.day);
-                      } else {
-                        // Default to day (or implement other logic as needed)
-                        startTime =
-                            DateTime(endTime.year, endTime.month, endTime.day);
+                        if (_selectedTimeframe == 'Week') {
+                          startTime = endTime.subtract(Duration(days: 7));
+                        } else if (_selectedTimeframe == 'Month') {
+                          startTime = DateTime(
+                              endTime.year, endTime.month - 1, endTime.day);
+                        } else {
+                          startTime = DateTime(
+                              endTime.year, endTime.month, endTime.day);
+                        }
+
+                        var activitiesRange = await DatabaseHelper
+                            .getTimeSpentOnActivitiesInRange(
+                                startTime, endTime);
+                        setState(() {
+                          activities = activitiesRange;
+                        });
                       }
-
-                      setState(() {
-                        activities = {
-                          'Running': 8600,
-                          'Reading': 4800,
-                          // Add more activities here
-                        };
-                        ;
-                      });
-                    }
-                  },
-                  items: _timeframeOptions
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                ),
-              ],
+                    },
+                    items: _timeframeOptions
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: SfCircularChart(
-              series: _createPieSeries(),
-            ),
-          ),
-          Expanded(
-              child: ListView.builder(
-            itemCount: activities.length,
-            itemBuilder: (context, index) {
-              String activityName = activities.keys.elementAt(index);
-              int durationInSeconds = activities.values.elementAt(index);
-              return Card(
-                child: ListTile(
-                  leading: Icon(Icons.access_time,
-                      color: Colors.blue), // Icon for the activity
-                  title: Text(activityName,
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(formatDuration(durationInSeconds)),
+            if (!activities.isEmpty)
+              SizedBox(
+                height: 300, // Fixed height for the pie chart
+                child: SfCircularChart(
+                  series: _createPieSeries(),
                 ),
-              );
-            },
-          )),
-        ],
+              ),
+            if (activities.isEmpty)
+              Center(
+                child: Text(
+                  'No available data',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ListView.builder(
+              itemCount: activities.length,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                String activityName = activities.keys.elementAt(index);
+                int durationInSeconds = activities.values.elementAt(index);
+                Color activityColor = pieColors[
+                    index % pieColors.length]; // Assign a color from the list
+                return Card(
+                  child: ListTile(
+                    leading: Icon(Icons.access_time,
+                        color: activityColor), // Use the assigned color
+                    title: Text(activityName,
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(formatDuration(durationInSeconds)),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -156,13 +165,16 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
   String formatDuration(int seconds) {
     int hours = seconds ~/ 3600;
     int minutes = (seconds % 3600) ~/ 60;
+    int remainingSeconds = seconds % 60;
+    if (hours == 0 && minutes == 0) {
+      return '${remainingSeconds}s'; // Return only seconds if less than a minute
+    }
     return '${hours}h ${minutes}m';
   }
 
   void changeDateTime(DateTime selectedDate) async {
-    // _controller.changeSelectedDay(selectedDate);
-    // await _controller.loadData(0);
-    // setState(() {});
+    _selectedDateTime = selectedDate;
+    _loadActivities();
   }
 
   List<PieSeries<MapEntry<String, int>, String>> _createPieSeries() {
@@ -172,6 +184,8 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
         dataSource: data,
         xValueMapper: (MapEntry<String, int> data, _) => data.key,
         yValueMapper: (MapEntry<String, int> data, _) => data.value,
+        pointColorMapper: (MapEntry<String, int> data, _) => pieColors[
+            activities.keys.toList().indexOf(data.key) % pieColors.length],
         dataLabelSettings: DataLabelSettings(isVisible: true),
       ),
     ];

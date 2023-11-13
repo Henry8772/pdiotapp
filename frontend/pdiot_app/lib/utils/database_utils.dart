@@ -143,13 +143,14 @@ class DatabaseHelper {
   static Future<int> createNewSession(int userId, DateTime startTime) async {
     // Assuming the current time as the start time for the session
     String endTime = DateTime.now().toIso8601String();
+    String startTimeString = startTime.toIso8601String();
 
     // Insert the new session and get its ID
     int sessionId = await _database!.insert(
       'sessions',
       {
         'userId': userId,
-        'startTime': startTime,
+        'startTime': startTimeString,
         'endTime': endTime,
         // 'endTime' can be updated later when the session ends
       },
@@ -183,10 +184,12 @@ class DatabaseHelper {
         .delete('session_activities', where: 'id = ?', whereArgs: [id]);
   }
 
-  static Future<Map<String, int>> getTimeSpentOnActivitiesToday() async {
+  static Future<Map<String, int>> getTimeSpentOnActivitiesByDay(
+      DateTime selectedDateTime) async {
     // Get today's date in the required format
-    DateTime now = DateTime.now();
-    String todayDate = DateTime(now.year, now.month, now.day).toIso8601String();
+    String todayDate = DateTime(
+            selectedDateTime.year, selectedDateTime.month, selectedDateTime.day)
+        .toIso8601String();
     //plese print all the data stored in session_activities and session
 
     // Query to join tables and calculate the sum of duration for each activity
