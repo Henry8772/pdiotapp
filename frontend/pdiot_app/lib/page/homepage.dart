@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:pdiot_app/utils/bluetooth_utils.dart';
 import 'package:pdiot_app/utils/database_utils.dart';
 
 import '../utils/ui_utils.dart';
@@ -15,18 +16,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   HomePageController _controller = HomePageController();
+  late StreamSubscription _dataSubscription;
+  Map<String, dynamic> sensorData = {};
 
   @override
   void initState() {
     super.initState();
-    chartData = List.generate(
-        20,
-        (index) =>
-            SensorData(index, randomValue(), randomValue(), randomValue()));
-    gyroData = List.generate(
-        20,
-        (index) =>
-            SensorData(index, randomValue(), randomValue(), randomValue()));
   }
 
   List<SensorData> chartData = [];
@@ -35,45 +30,54 @@ class _HomePageState extends State<HomePage> {
   double randomValue() => Random().nextDouble() * 100;
   Map<String, int> currentSessionActivities = {};
   DateTime startTime = DateTime.now();
+  int counter = 0;
 
   void startRecording() {
+    print("Start recording");
     startTime = DateTime.now();
-    timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+    // timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+    //   setState(() {
+    //     chartData.add(SensorData(
+    //         chartData.length, randomValue(), randomValue(), randomValue()));
+    //     gyroData.add(SensorData(
+    //         gyroData.length, randomValue(), randomValue(), randomValue()));
+    //     // print(gyroData);
+    //     if (chartData.length > 20) {
+    //       chartData.removeAt(0);
+    //       gyroData.removeAt(0);
+    //     }
+    //     String activity = _controller.getRandomActivity();
+    //     if (currentSessionActivities[activity] == null) {
+    //       currentSessionActivities[activity] = 1;
+    //     } else {
+    //       currentSessionActivities[activity] =
+    //           currentSessionActivities[activity]! + 1;
+    //     }
+    //   });
+    // });
+
+    _dataSubscription = BluetoothConnect().dataStream.listen((data) {
       setState(() {
-        chartData.add(SensorData(
-            chartData.length, randomValue(), randomValue(), randomValue()));
-        gyroData.add(SensorData(
-            gyroData.length, randomValue(), randomValue(), randomValue()));
-        print(gyroData);
-        if (chartData.length > 20) {
-          chartData.removeAt(0);
-          gyroData.removeAt(0);
-        }
-        String activity = _controller.getRandomActivity();
-        if (currentSessionActivities[activity] == null) {
-          currentSessionActivities[activity] = 1;
-        } else {
-          currentSessionActivities[activity] =
-              currentSessionActivities[activity]! + 1;
-        }
+        chartData
+            .add(SensorData(counter, data['accX'], data['accY'], data['accZ']));
+        sensorData = data;
+        counter += 1;
+
+        // if (chartData.length > 20) {
+        //   chartData.removeAt(0);
+        //   // gyroData.removeAt(0);
+        // }
       });
     });
   }
 
   void stopRecording() async {
     timer?.cancel();
+    counter = 0;
+    _dataSubscription.cancel();
     await _controller.saveSessionToDatabase(
         currentSessionActivities, startTime);
     currentSessionActivities.clear();
-    // var result = await DatabaseHelper.getSessions();
-
-    // var result_today = await DatabaseHelper.getTimeSpentOnActivitiesByDay();
-    // print("Result today");
-    // print(result_today);
-
-    // var result_week = await DatabaseHelper.getTimeSpentOnActivitiesToday();
-    // print("Result today");
-    // print(result_today);
   }
 
   @override
@@ -88,7 +92,12 @@ class _HomePageState extends State<HomePage> {
             children: <Widget>[
               _buildMotionDisplayBox(),
               SizedBox(height: 20),
-              buildChartBox('Accelerometer Data', chartData),
+              buildChartBox(
+                'Accelerometer Data',
+                chartData.length <= 20
+                    ? chartData
+                    : chartData.sublist(chartData.length - 20),
+              ),
               SizedBox(height: 20),
               buildChartBox('Gyroscope Data', gyroData),
               SizedBox(height: 20),
@@ -123,6 +132,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     timer?.cancel();
+
     super.dispose();
   }
 }

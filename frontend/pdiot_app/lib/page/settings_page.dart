@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pdiot_app/model/current_user.dart';
 import 'package:pdiot_app/page/login_page.dart';
+import 'package:pdiot_app/page/settings_controller.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -11,6 +12,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _bluetoothDeviceIdController =
       TextEditingController();
+  SettingsController _settingsController = SettingsController();
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
               padding: EdgeInsets.only(top: 8.0),
               child: TextField(
                 controller: _bluetoothDeviceIdController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Enter Bluetooth Device ID',
                   border: OutlineInputBorder(),
                   isDense: true, // Reduces padding
@@ -66,6 +68,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               onPressed: () {
                 String deviceId = _bluetoothDeviceIdController.text;
+                _settingsController.connectBluetooth();
                 // Bluetooth connection logic
               },
               child: Text('Connect to Bluetooth'),
