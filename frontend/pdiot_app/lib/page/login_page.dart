@@ -32,27 +32,25 @@ class _LoginPageState extends State<LoginPage> {
               obscureText: true,
             ),
             ElevatedButton(
-              onPressed: () => _controller.login(
-                  _usernameController.text, _usernameController.text),
+              onPressed: () {
+                _controller.login(
+                    _usernameController.text, _usernameController.text);
+                Get.back();
+              },
               child: const Text('Login'),
             ),
             ElevatedButton(
-              onPressed: () => _controller.register(
-                  _usernameController.text, _usernameController.text),
+              onPressed: () {
+                _controller.register(
+                    _usernameController.text, _usernameController.text);
+                Get.back();
+              },
               child: const Text('Register'),
             ),
           ],
         ),
       ),
     );
-  }
-
-  void _login() {
-    // Implement login logic
-  }
-
-  void _register() {
-    // Implement register logic
   }
 
   @override

@@ -12,7 +12,8 @@ class LoginController extends GetxController {
       if (user['username'] == username && user['password'] == password) {
         // Login successful
         print("User founds");
-        CurrentUser.instance.setId(user['id'].toString());
+        CurrentUser.instance
+            .setCurrentUser(user['id'].toString(), user['username']);
         return;
       }
     }
@@ -24,7 +25,7 @@ class LoginController extends GetxController {
       'username': username,
       'password': password,
     });
-    CurrentUser.instance.setId(userId.toString());
+    CurrentUser.instance.setCurrentUser(userId.toString(), username);
     // User registered
   }
 }
