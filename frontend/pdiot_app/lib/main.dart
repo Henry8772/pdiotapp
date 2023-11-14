@@ -47,14 +47,15 @@ class _MainPageState extends State<MainPage> {
   }
 
   final pages = [
-    const LoginPage(),
+    // const LoginPage(),
+    ActivitiHistoryPage(),
     HomePage(),
     // ChartPage(),
-    ActivitiHistoryPage(),
+
     SettingsPage(),
   ];
 
-  final pageTitles = ["Login", "Home", "History", "Settings"];
+  final pageTitles = ["History", "Home", "Settings"];
 
   @override
   Widget build(BuildContext context) {
@@ -95,32 +96,24 @@ class _MainPageState extends State<MainPage> {
         currentIndex: _currentIndex,
         onTap: (int index) => _pageController.jumpToPage(index),
         items: [
-          /// Medication
+          /// Home
 
           SalomonBottomBarItem(
-            icon: const Icon(Icons.account_box),
-            title: Text("Login", textScaleFactor: textScaleFactor),
-            selectedColor: Colors.purple,
+            icon: const Icon(Icons.history),
+            title: Text("History", textScaleFactor: textScaleFactor),
+            selectedColor: Colors.blue[800],
           ),
-
-          /// Home
 
           SalomonBottomBarItem(
             icon: const Icon(Icons.home),
             title: Text("Home", textScaleFactor: textScaleFactor),
-            selectedColor: Colors.purple,
-          ),
-
-          SalomonBottomBarItem(
-            icon: const Icon(Icons.home),
-            title: Text("Test", textScaleFactor: textScaleFactor),
-            selectedColor: Colors.purple,
+            selectedColor: Colors.green,
           ),
 
           SalomonBottomBarItem(
             icon: const Icon(Icons.settings),
             title: Text("Settings", textScaleFactor: textScaleFactor),
-            selectedColor: Colors.red,
+            selectedColor: Colors.orange,
           ),
         ],
       ),
