@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:animated_icon_button/animated_icon_button.dart';
 import 'package:pdiot_app/model/custom_model.dart';
 import 'package:pdiot_app/utils/bluetooth_utils.dart';
 
@@ -33,6 +34,7 @@ class _HomePageState extends State<HomePage> {
   int counter = 0;
   ModelType selectedModel = ModelType.task1; // Default selected value
   List<ModelType> models = ModelType.values;
+  String currentActivity = "None";
 
   void startRecording() {
     startTime = DateTime.now();
@@ -42,25 +44,23 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         chartData
             .add(SensorData(counter, data['accX'], data['accY'], data['accZ']));
-        // sensorData = data;
-        counter += 1;
-
-        acc.add(
-            Float32List.fromList([data['accX'], data['accY'], data['accZ']]));
       });
+      counter += 1;
+
+      acc.add(Float32List.fromList([data['accX'], data['accY'], data['accZ']]));
 
       if (acc.length % 25 == 0 && acc.length >= 50) {
         List<Float32List> last2SecData = acc.sublist(acc.length - 50);
         String result = await CustomModel().performInference(last2SecData);
-        print(result);
-      }
-
-      String activity = _controller.getRandomActivity();
-      if (currentSessionActivities[activity] == null) {
-        currentSessionActivities[activity] = 1;
-      } else {
-        currentSessionActivities[activity] =
-            currentSessionActivities[activity]! + 1;
+        setState(() {
+          currentActivity = result; // Update current activity
+        });
+        if (currentSessionActivities[result] == null) {
+          currentSessionActivities[result] = 1;
+        } else {
+          currentSessionActivities[result] =
+              currentSessionActivities[result]! + 1;
+        }
       }
     });
   }
@@ -106,9 +106,8 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 20),
               buildChartBox('Gyroscope Data', gyroData),
               const SizedBox(height: 20),
-              recordingButton(),
-              const SizedBox(height: 20),
-              modelSelectionAndLoad(),
+              _buildControlBox(), // Updated widget for recording control
+              // ... [Other widgets]
             ],
           ),
         ),
@@ -170,14 +169,128 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildMotionDisplayBox() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        "Current Motion: ${_controller.isRecording ? 'Recording...' : 'Stopped'}",
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+  // Combined Control Box for Recording and Model Selection
+  Widget _buildControlBox() {
+    return Container(
+      padding: EdgeInsets.all(10),
+      child: Column(
+        children: [
+          modelSelectionAndLoad(),
+          SizedBox(height: 10), // Spacing between buttons
+
+          recordingButton(),
+        ],
       ),
     );
+  }
+
+  // Common box decoration
+  BoxDecoration _boxDecoration() {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.5),
+          spreadRadius: 1,
+          blurRadius: 5,
+          offset: Offset(0, 3), // changes position of shadow
+        ),
+      ],
+    );
+  }
+
+  // Redesigned Motion Display Box
+  Widget _buildMotionDisplayBox() {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 500),
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        border: Border.all(
+            color: _getBorderColor(currentActivity)), // Dynamic border color
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Expanded(
+            child: Text(
+              "Current Activity: ${_controller.isRecording ? currentActivity : 'None'}",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ),
+          _getActivityIcon(currentActivity), // Updated for specific activities
+        ],
+      ),
+    );
+  }
+
+  // Function to get dynamic border color based on activity
+  // Function to get dynamic border color based on activity
+  Color _getBorderColor(String activity) {
+    switch (activity) {
+      case "Ascending stairs":
+        return Colors.deepOrange;
+      case "Descending stairs":
+        return Colors.brown;
+      case "Lying down back":
+        return Colors.lightBlue;
+      case "Lying down on left":
+        return Colors.purple;
+      case "Lying down right":
+        return Colors.pink;
+      case "Lying down on stomach":
+        return Colors.teal;
+      case "Miscellaneous movements":
+        return Colors.grey;
+      case "Normal walking":
+        return Colors.green;
+      case "Running":
+        return Colors.red;
+      case "Shuffle walking":
+        return Colors.amber;
+      case "Sitting/standing":
+        return Colors.indigo;
+      default:
+        return Colors
+            .blue; // Default color when no specific activity is detected
+    }
+  }
+
+  Widget _getActivityIcon(String activity) {
+    IconData icon;
+    switch (activity) {
+      case "Ascending stairs":
+        icon = Icons.arrow_upward;
+        break;
+      case "Descending stairs":
+        icon = Icons.arrow_downward;
+        break;
+      case "Lying down back":
+      case "Lying down on left":
+      case "Lying down right":
+      case "Lying down on stomach":
+        icon = Icons.bed;
+        break;
+      case "Miscellaneous movements":
+        icon = Icons.shuffle;
+        break;
+      case "Normal walking":
+        icon = Icons.directions_walk;
+        break;
+      case "Running":
+        icon = Icons.directions_run;
+        break;
+      case "Shuffle walking":
+        icon = Icons.transfer_within_a_station;
+        break;
+      case "Sitting/standing":
+        icon = Icons.event_seat;
+        break;
+      default:
+        icon = Icons.help_outline;
+    }
+    return Icon(icon, size: 30);
   }
 
   @override

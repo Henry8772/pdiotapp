@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   tflite_flutter:  ^0.10.3
   csv: ^5.1.0
+  animated_icon_button: ^1.0.2
   google_ml_kit: ^0.16.2
   get: ^4.6.5
   flutter_reactive_ble: ^5.2.0

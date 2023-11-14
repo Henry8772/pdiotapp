@@ -115,12 +115,8 @@ class CustomModel {
 
     await isolateInterpreter!.run(finalInputData, output);
 
-    print(output);
-
     List<double> data = output.flatten();
-    print(data);
     int argMaxIndex = data.indexWhere((element) => element == data.reduce(max));
-    print(argMaxIndex);
 
     // List<double> data = output[0];
 
@@ -137,8 +133,6 @@ class CustomModel {
     return currentLabelList.isNotEmpty
         ? currentLabelList[argMaxIndex]
         : 'Label not found';
-
-    // return labelList[argMaxIndex];
   }
 }
 

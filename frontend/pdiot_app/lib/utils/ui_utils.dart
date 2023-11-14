@@ -15,6 +15,7 @@ class SensorData {
 Widget buildChartBox(String title, List<SensorData> data) {
   return Container(
     height: 200, // Fixed height for the chart container
+
     decoration: BoxDecoration(
       color: CupertinoColors.systemGrey6,
       borderRadius: BorderRadius.circular(12),

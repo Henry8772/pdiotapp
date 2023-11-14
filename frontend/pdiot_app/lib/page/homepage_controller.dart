@@ -10,19 +10,19 @@ class HomePageController extends GetxController {
   // Variables, and methods to manage the page's data and logic
   bool isRecording = false;
 
-  static const activities = [
-    'Shuffle walking',
-    'Lying down on stomach',
-    'Ascending stairs',
-    'Sitting/standing',
-    'Running',
-    'Lying down right',
-    'Descending stairs',
-    'Miscellaneous movements',
-    'Normal walking',
-    'Lying down on left',
-    'Lying down back'
-  ];
+  // static const activities = [
+  //   'Shuffle walking',
+  //   'Lying down on stomach',
+  //   'Ascending stairs',
+  //   'Sitting/standing',
+  //   'Running',
+  //   'Lying down right',
+  //   'Descending stairs',
+  //   'Miscellaneous movements',
+  //   'Normal walking',
+  //   'Lying down on left',
+  //   'Lying down back'
+  // ];
 
   RxString output = "Waiting for result"
       .obs; // consider using RxString for reactive programming if you're using GetX.
@@ -34,12 +34,12 @@ class HomePageController extends GetxController {
     // Perform any initialization that needs to happen when the controller is first created
   }
 
-  String getRandomActivity() {
-    final random = Random();
-    int randomIndex =
-        random.nextInt(activities.length); // Generates a random index
-    return activities[randomIndex]; // Returns the activity at the random index
-  }
+  // String getRandomActivity() {
+  //   final random = Random();
+  //   int randomIndex =
+  //       random.nextInt(activities.length); // Generates a random index
+  //   return activities[randomIndex]; // Returns the activity at the random index
+  // }
 
   Future<void> load() async {
     CustomModel().loadModel(ModelType.task1);
