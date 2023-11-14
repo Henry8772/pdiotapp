@@ -73,6 +73,8 @@ RESpeckRawPacket decodeIMUPacket(Uint8List values,
   );
 }
 
+typedef ConnectionCallback = void Function(bool isConnected);
+
 class BluetoothConnect {
   // Singleton pattern
   static final BluetoothConnect _instance = BluetoothConnect._internal();
@@ -89,10 +91,20 @@ class BluetoothConnect {
   final uuidRespeckImu = Uuid.parse("00001527-1212-efde-1523-785feabcd125");
   final uuidRespeckService = Uuid.parse("00001523-1212-efde-1523-785feabcd125");
 
-  // Expose a stream to listen to data
   Stream<Map<String, dynamic>> get dataStream => _dataStreamController.stream;
 
-  void connectToDevice(DiscoveredDevice device) {
+  // Callback instance
+  ConnectionCallback? onConnectionChanged;
+  String? _connectedDeviceId;
+
+  // Expose a stream to listen to data
+  // Stream<Map<String, dynamic>> get dataStream => _dataStreamController.stream;
+
+  void connectToDevice(DiscoveredDevice device,
+      {ConnectionCallback? onConnectionChanged}) {
+    this.onConnectionChanged = onConnectionChanged;
+    _connectedDeviceId = device.id;
+
     _ble
         .connectToDevice(
       id: device.id,
@@ -103,21 +115,31 @@ class BluetoothConnect {
       if (connectionState.connectionState == DeviceConnectionState.connected) {
         print('Device connected');
         discoverServices(device.id);
+
+        // Trigger the callback on successful connection
+        onConnectionChanged?.call(true);
+      } else if (connectionState.connectionState ==
+          DeviceConnectionState.disconnected) {
+        // Trigger the callback on disconnection
+        onConnectionChanged?.call(false);
       }
     }, onError: (Object error) {
       print(error);
+      onConnectionChanged?.call(false);
     });
   }
 
-  void scanForDevices(String deviceId) {
+  void scanForDevices(String deviceId,
+      {ConnectionCallback? onConnectionChanged}) {
     _ble.scanForDevices(scanMode: ScanMode.lowLatency, withServices: []).listen(
         (device) {
       _devicesList.add(device);
       if (device.name.contains('Res6AL') && device.id == deviceId) {
-        connectToDevice(device);
+        connectToDevice(device, onConnectionChanged: onConnectionChanged);
       }
     }, onError: (error) {
       print('Error while scanning for devices: $error');
+      onConnectionChanged?.call(false);
     });
   }
 

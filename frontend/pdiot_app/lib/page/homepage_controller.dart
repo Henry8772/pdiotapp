@@ -74,14 +74,8 @@ class HomePageController extends GetxController {
   Future<bool> saveSessionToDatabase(
       Map<String, int> sessionDurations, DateTime startTime) async {
     int userId = int.parse(CurrentUser.instance.id.value);
-    int sessionId = await DatabaseHelper.createNewSession(0, startTime);
-    // print(userId);
+    int sessionId = await DatabaseHelper.createNewSession(userId, startTime);
 
-    // Convert sessionDurations to a format suitable for your database
-    // This might involve fetching activity IDs based on names, creating session records, etc.
-
-    // Example: Assuming you have a method to save session activity
-    // Create a new session and get its ID
     sessionDurations.forEach((activityName, duration) async {
       int activityId = await DatabaseHelper.getActivityIdByName(
           activityName); // Get activity ID by name

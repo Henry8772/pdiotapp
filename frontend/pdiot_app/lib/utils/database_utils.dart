@@ -1,3 +1,4 @@
+import 'package:pdiot_app/model/current_user.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -156,8 +157,7 @@ class DatabaseHelper {
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-    print("sessionId");
-    print(sessionId);
+
     return sessionId;
   }
 
@@ -186,29 +186,31 @@ class DatabaseHelper {
 
   static Future<Map<String, int>> getTimeSpentOnActivitiesByDay(
       DateTime selectedDateTime) async {
+    int userId =
+        int.parse(CurrentUser.instance.id.value); // Get the current user's ID
+
     // Get today's date in the required format
     String todayDate = DateTime(
             selectedDateTime.year, selectedDateTime.month, selectedDateTime.day)
         .toIso8601String();
-    //plese print all the data stored in session_activities and session
 
-    // Query to join tables and calculate the sum of duration for each activity
+    // Query to join tables and calculate the sum of duration for each activity for the current user
     String query = '''
-      SELECT a.name, SUM(sa.duration) as totalDuration
-      FROM activities a
-      JOIN session_activities sa ON a.id = sa.activityId
-      JOIN sessions s ON sa.sessionId = s.id
-      WHERE DATE(s.startTime) = DATE(?) OR DATE(s.endTime) = DATE(?)
-      GROUP BY a.name
-    ''';
+    SELECT a.name, SUM(sa.duration) as totalDuration
+    FROM activities a
+    JOIN session_activities sa ON a.id = sa.activityId
+    JOIN sessions s ON sa.sessionId = s.id
+    WHERE s.userId = ? AND (DATE(s.startTime) = DATE(?) OR DATE(s.endTime) = DATE(?))
+    GROUP BY a.name
+  ''';
 
-    // Execute the query
-    List<Map<String, dynamic>> results =
-        await _database!.rawQuery(query, [todayDate, todayDate]);
+    // Execute the query with the user ID
+    List<Map<String, dynamic>> activityResults =
+        await _database!.rawQuery(query, [userId, todayDate, todayDate]);
 
     // Convert the query results to a more readable format
     Map<String, int> activityDurations = {};
-    for (var row in results) {
+    for (var row in activityResults) {
       activityDurations[row['name']] = row['totalDuration'];
     }
 
@@ -217,6 +219,8 @@ class DatabaseHelper {
 
   static Future<Map<String, int>> getTimeSpentOnActivitiesInRange(
       DateTime startDate, DateTime endDate) async {
+    int userId = int.parse(CurrentUser.instance.id.value);
+
     // Convert dates to the required format
     String startDateStr =
         DateTime(startDate.year, startDate.month, startDate.day)
@@ -224,19 +228,19 @@ class DatabaseHelper {
     String endDateStr =
         DateTime(endDate.year, endDate.month, endDate.day).toIso8601String();
 
-    // Query to calculate the sum of duration for each activity in the given date range
+    // Modified query to incorporate userId
     String query = '''
-    SELECT a.name, SUM(sa.duration) as totalDuration
-    FROM activities a
-    JOIN session_activities sa ON a.id = sa.activityId
-    JOIN sessions s ON sa.sessionId = s.id
-    WHERE DATE(s.startTime) >= DATE(?) AND DATE(s.endTime) <= DATE(?)
-    GROUP BY a.name
+  SELECT a.name, SUM(sa.duration) as totalDuration
+  FROM activities a
+  JOIN session_activities sa ON a.id = sa.activityId
+  JOIN sessions s ON sa.sessionId = s.id
+  WHERE s.userId = ? AND DATE(s.startTime) >= DATE(?) AND DATE(s.endTime) <= DATE(?)
+  GROUP BY a.name
   ''';
 
-    // Execute the query
+    // Execute the query with the userId included in the parameters
     List<Map<String, dynamic>> results =
-        await _database!.rawQuery(query, [startDateStr, endDateStr]);
+        await _database!.rawQuery(query, [userId, startDateStr, endDateStr]);
 
     // Convert the query results to a more readable format
     Map<String, int> activityDurations = {};

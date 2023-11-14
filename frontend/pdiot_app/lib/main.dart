@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pdiot_app/page/activity_history_page.dart';
-import 'package:pdiot_app/page/chartpage.dart';
-import 'package:pdiot_app/page/history_page.dart';
+
 import 'package:pdiot_app/page/login_page.dart';
 import 'package:pdiot_app/page/settings_page.dart';
 import 'package:pdiot_app/utils/database_utils.dart';

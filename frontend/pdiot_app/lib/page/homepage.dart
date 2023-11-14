@@ -33,7 +33,6 @@ class _HomePageState extends State<HomePage> {
   int counter = 0;
 
   void startRecording() {
-    print("Start recording");
     startTime = DateTime.now();
     // timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
     //   setState(() {
@@ -57,16 +56,19 @@ class _HomePageState extends State<HomePage> {
     // });
 
     _dataSubscription = BluetoothConnect().dataStream.listen((data) {
+      if (!mounted) return;
       setState(() {
         chartData
             .add(SensorData(counter, data['accX'], data['accY'], data['accZ']));
         sensorData = data;
         counter += 1;
-
-        // if (chartData.length > 20) {
-        //   chartData.removeAt(0);
-        //   // gyroData.removeAt(0);
-        // }
+        String activity = _controller.getRandomActivity();
+        if (currentSessionActivities[activity] == null) {
+          currentSessionActivities[activity] = 1;
+        } else {
+          currentSessionActivities[activity] =
+              currentSessionActivities[activity]! + 1;
+        }
       });
     });
   }
@@ -91,16 +93,16 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               _buildMotionDisplayBox(),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               buildChartBox(
                 'Accelerometer Data',
                 chartData.length <= 20
                     ? chartData
                     : chartData.sublist(chartData.length - 20),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               buildChartBox('Gyroscope Data', gyroData),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               CupertinoButton.filled(
                 onPressed: () {
                   setState(() {

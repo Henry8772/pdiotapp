@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pdiot_app/model/current_user.dart';
 import 'package:pdiot_app/page/login_page.dart';
-import 'package:pdiot_app/page/settings_controller.dart';
+import 'package:pdiot_app/utils/bluetooth_utils.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -12,7 +12,8 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _bluetoothDeviceIdController =
       TextEditingController();
-  SettingsController _settingsController = SettingsController();
+  bool _isBluetoothConnected = false;
+  String _connectedDeviceId = '';
 
   @override
   Widget build(BuildContext context) {
@@ -47,14 +48,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 style: Theme.of(context).textTheme.subtitle1),
             subtitle: Padding(
               padding: EdgeInsets.only(top: 8.0),
-              child: TextField(
-                controller: _bluetoothDeviceIdController,
-                decoration: const InputDecoration(
-                  labelText: 'Enter Bluetooth Device ID',
-                  border: OutlineInputBorder(),
-                  isDense: true, // Reduces padding
-                ),
-              ),
+              child: _isBluetoothConnected
+                  ? Text('Connected to $_connectedDeviceId')
+                  : TextField(
+                      controller: _bluetoothDeviceIdController,
+                      decoration: const InputDecoration(
+                        labelText: 'Enter Bluetooth Device ID',
+                        border: OutlineInputBorder(),
+                        isDense: true, // Reduces padding
+                      ),
+                    ),
             ),
             isThreeLine: true,
           ),
@@ -62,21 +65,46 @@ class _SettingsPageState extends State<SettingsPage> {
             padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Theme.of(context).primaryColor, // Theme-based color
+                primary: Theme.of(context).primaryColor,
                 padding: EdgeInsets.symmetric(vertical: 12.0),
                 textStyle: TextStyle(fontSize: 18),
               ),
-              onPressed: () {
-                String deviceId = _bluetoothDeviceIdController.text;
-                _settingsController.connectBluetooth();
-                // Bluetooth connection logic
-              },
+              onPressed: connectBluetooth,
               child: Text('Connect to Bluetooth'),
             ),
           ),
         ],
       ),
     );
+  }
+
+  void connectBluetooth() {
+    // if (bluetoothInstance == null) {
+    //   setOnNewSensorDataCallback(addSensorData);
+    // }
+
+    BluetoothConnect().scanForDevices('D9:A7:42:37:ED:C3',
+        onConnectionChanged: (isConnected) {
+      if (isConnected) {
+        if (isConnected) {
+          // Show notification
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Bluetooth is connected'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    });
+  }
+
+  void disconnectBluetooth() {
+    // Implement your disconnection logic here
+    setState(() {
+      _isBluetoothConnected = false;
+      _connectedDeviceId = '';
+    });
   }
 
   @override
