@@ -152,10 +152,19 @@ class _HomePageState extends State<HomePage> {
 
         // Load button
         ElevatedButton(
-          onPressed: () {
-            CustomModel().loadModel(selectedModel);
+          onPressed: () async {
+            bool loaded = await CustomModel().loadModel(selectedModel);
+            if (loaded) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content:
+                      Text("Model ${modelToString(selectedModel)} is loaded"),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
           },
-          child: const Text("Load"),
+          child: const Text("Load Model"),
         ),
       ],
     );

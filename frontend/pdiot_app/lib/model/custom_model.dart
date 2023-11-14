@@ -19,17 +19,17 @@ class CustomModel {
 
   final Map<ModelType, List<String>> labelLists = {
     ModelType.task1: [
-      'Shuffle walking',
-      'Lying down on stomach',
       'Ascending stairs',
-      'Sitting/standing',
-      'Running',
-      'Lying down right',
       'Descending stairs',
+      'Lying down back',
+      'Lying down on left',
+      'Lying down right',
+      'Lying down on stomach',
       'Miscellaneous movements',
       'Normal walking',
-      'Lying down on left',
-      'Lying down back'
+      'Running',
+      'Shuffle walking',
+      'Sitting/standing',
     ],
     ModelType.task2: [
       'Miscellaneous movements',
@@ -67,7 +67,7 @@ class CustomModel {
   }
 
   // Updated load model method
-  Future<void> loadModel(ModelType modelType) async {
+  Future<bool> loadModel(ModelType modelType) async {
     if (_currentModelType != modelType) {
       // Dispose of the existing model if a different type is requested
       isolateInterpreter?.close();
@@ -92,10 +92,13 @@ class CustomModel {
         isolateInterpreter =
             await IsolateInterpreter.create(address: interpreter.address);
         print('Model $modelType loaded successfully in isolate');
+        return true;
       } catch (e) {
         print('Failed to load the model in isolate: $e');
+        return false;
       }
     }
+    return false;
   }
 
   // Updated perform inference method
