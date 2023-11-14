@@ -44,31 +44,7 @@ class HomePageController extends GetxController {
   }
 
   Future<void> load() async {
-    if (model == null) {
-      // Correct null comparison
-      model =
-          CustomModel(); // Assuming CustomModel's constructor is asynchronous
-      await model!
-          .loadModel(); // model is nullable, so we should use the null-aware operator (!.)
-    }
-  }
-
-  Future<void> buttonClicked(int ind) async {
-    if (model == null) {
-      // handle the case where the model might not be loaded yet
-      print('Model not loaded yet');
-      load();
-    }
-    output.value = 'Predicting';
-
-    List<List<dynamic>> csvData =
-        await model!.loadCsvData(ind); // Using the null-aware operator
-    List<Float32List> inputData = await model!.prepareData(csvData);
-
-    String result = await model!.performInference(inputData);
-
-    output.value =
-        result; // If you're using RxString, you should set its value like this.
+    CustomModel().loadModel(ModelType.modelA);
   }
 
   Future<bool> saveSessionToDatabase(

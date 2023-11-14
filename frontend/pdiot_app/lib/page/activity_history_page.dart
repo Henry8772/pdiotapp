@@ -107,7 +107,7 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
               ),
             if (activities.isEmpty)
               Center(
-                child: Text(
+                child: const Text(
                   'No available data',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),

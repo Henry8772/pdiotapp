@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:isolate';
 import 'dart:math';
+import 'dart:typed_data';
+import 'package:pdiot_app/model/custom_model.dart';
 import 'package:pdiot_app/utils/bluetooth_utils.dart';
 import 'package:pdiot_app/utils/database_utils.dart';
 
@@ -17,7 +20,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   HomePageController _controller = HomePageController();
   late StreamSubscription _dataSubscription;
-  Map<String, dynamic> sensorData = {};
+  // Map<String, dynamic> sensorData = {};
+
+  List<Float32List> acc = [];
 
   @override
   void initState() {
@@ -34,44 +39,74 @@ class _HomePageState extends State<HomePage> {
 
   void startRecording() {
     startTime = DateTime.now();
-    // timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
-    //   setState(() {
-    //     chartData.add(SensorData(
-    //         chartData.length, randomValue(), randomValue(), randomValue()));
-    //     gyroData.add(SensorData(
-    //         gyroData.length, randomValue(), randomValue(), randomValue()));
-    //     // print(gyroData);
-    //     if (chartData.length > 20) {
-    //       chartData.removeAt(0);
-    //       gyroData.removeAt(0);
-    //     }
-    //     String activity = _controller.getRandomActivity();
-    //     if (currentSessionActivities[activity] == null) {
-    //       currentSessionActivities[activity] = 1;
-    //     } else {
-    //       currentSessionActivities[activity] =
-    //           currentSessionActivities[activity]! + 1;
-    //     }
-    //   });
-    // });
 
-    _dataSubscription = BluetoothConnect().dataStream.listen((data) {
+    _dataSubscription = BluetoothConnect().dataStream.listen((data) async {
       if (!mounted) return;
       setState(() {
         chartData
             .add(SensorData(counter, data['accX'], data['accY'], data['accZ']));
-        sensorData = data;
+        // sensorData = data;
         counter += 1;
-        String activity = _controller.getRandomActivity();
-        if (currentSessionActivities[activity] == null) {
-          currentSessionActivities[activity] = 1;
-        } else {
-          currentSessionActivities[activity] =
-              currentSessionActivities[activity]! + 1;
-        }
+
+        acc.add(
+            Float32List.fromList([data['accX'], data['accY'], data['accZ']]));
       });
+
+      if (acc.length % 25 == 0 && acc.length >= 50) {
+        print("Starting inferencing");
+        List<Float32List> last2SecData = acc.sublist(acc.length - 50);
+        String result = await CustomModel().performInference(last2SecData);
+        print(result);
+      }
+
+      // output = result;
+
+      String activity = _controller.getRandomActivity();
+      if (currentSessionActivities[activity] == null) {
+        currentSessionActivities[activity] = 1;
+      } else {
+        currentSessionActivities[activity] =
+            currentSessionActivities[activity]! + 1;
+      }
     });
   }
+
+// This method uses an isolate to perform inference
+  // void performInferenceInBackground() async {
+  //   List<Float32List> last2SecData = acc.sublist(acc.length - 50);
+
+  //   ReceivePort receivePort = ReceivePort();
+  //   Isolate.spawn(_inferenceIsolate, receivePort.sendPort);
+
+  //   SendPort sendPort = await receivePort.first;
+  //   sendPort.send([last2SecData, receivePort.sendPort]);
+
+  //   // Receive the result from the isolate
+  //   receivePort.listen((result) {
+  //     String activity = result;
+  //     print("activity");
+  //     print(activity);
+  //     // Update your UI or state based on the result here
+  //     // ...
+  //   });
+  // }
+
+// Isolate function for inference
+  // void _inferenceIsolate(SendPort initialSendPort) async {
+  //   ReceivePort port = ReceivePort();
+  //   initialSendPort.send(port.sendPort);
+
+  //   await for (var message in port) {
+  //     List<Float32List> data = message[0];
+  //     SendPort replyPort = message[1];
+
+  //     // Perform your inference here
+  //     String result = await CustomModel().performInference(data);
+
+  //     // Send the result back to the main thread
+  //     replyPort.send(result);
+  //   }
+  // }
 
   void stopRecording() async {
     timer?.cancel();
@@ -96,9 +131,9 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 20),
               buildChartBox(
                 'Accelerometer Data',
-                chartData.length <= 20
+                chartData.length <= 50
                     ? chartData
-                    : chartData.sublist(chartData.length - 20),
+                    : chartData.sublist(chartData.length - 50),
               ),
               const SizedBox(height: 20),
               buildChartBox('Gyroscope Data', gyroData),
@@ -113,6 +148,13 @@ class _HomePageState extends State<HomePage> {
                   });
                 },
                 child: Text(_controller.isRecording ? 'Stop' : 'Start'),
+              ),
+              const SizedBox(height: 20),
+              CupertinoButton.filled(
+                onPressed: () {
+                  CustomModel().loadModel(ModelType.modelA);
+                },
+                child: Text("load"),
               ),
             ],
           ),
