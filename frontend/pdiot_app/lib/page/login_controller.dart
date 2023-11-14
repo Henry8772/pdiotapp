@@ -6,26 +6,33 @@ class LoginController extends GetxController {
   // Variables, and methods to manage the page's data and logic
   // DatabaseHelper databaseInstance = DatabaseHelper();
 
-  void login(username, password) async {
+  Future<bool> login(username, password) async {
     final users = await DatabaseHelper.getUsers();
+
     for (var user in users!) {
+      // print(user['username']);
+      print(user);
+      // print(user['password']);
       if (user['username'] == username && user['password'] == password) {
         // Login successful
-        print("User founds");
+        print('user found');
         CurrentUser.instance
             .setCurrentUser(user['id'].toString(), user['username']);
-        return;
+        return true;
       }
     }
+    return false;
     // Login failed
   }
 
-  void register(username, password) async {
+  Future<bool> register(username, password) async {
     int userId = await DatabaseHelper.insertUser({
       'username': username,
       'password': password,
     });
     CurrentUser.instance.setCurrentUser(userId.toString(), username);
     // User registered
+
+    return true;
   }
 }
