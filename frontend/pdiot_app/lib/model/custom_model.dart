@@ -1,8 +1,9 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:tflite_flutter/tflite_flutter.dart';
 
-enum ModelType { modelA, modelB, modelC }
+enum ModelType { task1, task2, task3 }
 
 class CustomModel {
   static final CustomModel _singleton = CustomModel._internal();
@@ -16,20 +17,54 @@ class CustomModel {
     return _singleton;
   }
 
-  List<String> labelList = [
-    'Miscellaneous movements',
-    'Lying down right',
-    'Descending stairs',
-    'Lying down back',
-    'Lying down on left',
-    'Lying down on stomach',
-    'Shuffle walking',
-    'Lying down right',
-    'Lying down back',
-    'Sitting',
-    'Standing',
-    'Lying down on stomach'
-  ];
+  final Map<ModelType, List<String>> labelLists = {
+    ModelType.task1: [
+      'Shuffle walking',
+      'Lying down on stomach',
+      'Ascending stairs',
+      'Sitting/standing',
+      'Running',
+      'Lying down right',
+      'Descending stairs',
+      'Miscellaneous movements',
+      'Normal walking',
+      'Lying down on left',
+      'Lying down back'
+    ],
+    ModelType.task2: [
+      'Miscellaneous movements',
+      'Lying down right',
+      'Descending stairs',
+      'Lying down back',
+      'Lying down on left',
+      'Lying down on stomach',
+      'Shuffle walking',
+      'Lying down right',
+      'Lying down back',
+      'Sitting',
+      'Standing',
+      'Lying down on stomach'
+
+      // Labels specific to Model B
+    ],
+    ModelType.task3: [
+      // Labels specific to Model C
+    ],
+  };
+
+  // Helper method to get the output shape based on model type
+  List<int> getOutputShape(ModelType? modelType) {
+    switch (modelType) {
+      case ModelType.task1:
+        return [1, 11]; // Example shape for model A
+      case ModelType.task2:
+        return [1, 12]; // Example shape for model B
+      case ModelType.task3:
+        return [1, 16]; // Example shape for model C
+      default:
+        return [1, 11]; // Default shape
+    }
+  }
 
   // Updated load model method
   Future<void> loadModel(ModelType modelType) async {
@@ -41,14 +76,14 @@ class CustomModel {
 
       String modelPath;
       switch (modelType) {
-        case ModelType.modelA:
+        case ModelType.task1:
+          modelPath = 'assets/models/model_online_task_1.tflite';
+          break;
+        case ModelType.task2:
           modelPath = 'assets/models/model_cnn.tflite';
           break;
-        case ModelType.modelB:
-          modelPath = 'assets/models/model_cnn_b.tflite';
-          break;
-        case ModelType.modelC:
-          modelPath = 'assets/models/model_cnn_c.tflite';
+        case ModelType.task3:
+          modelPath = 'assets/models/model_cnn.tflite';
           break;
       }
 
@@ -71,18 +106,40 @@ class CustomModel {
     }
 
     List<List<Float32List>> finalInputData = [inputData];
-    var output = List.filled(1 * 12, 0).reshape([1, 12]);
+    var outputShape = getOutputShape(_currentModelType);
+    var output = List.filled(outputShape.reduce((a, b) => a * b), 0)
+        .reshape(outputShape);
 
     await isolateInterpreter!.run(finalInputData, output);
 
-    List<double> data = output[0];
+    print(output);
 
-    int argMaxIndex = 0;
-    for (int i = 1; i < data.length; i++) {
-      if (data[i] > data[argMaxIndex]) {
-        argMaxIndex = i;
-      }
-    }
-    return labelList[argMaxIndex];
+    List<double> data = output.flatten();
+    print(data);
+    int argMaxIndex = data.indexWhere((element) => element == data.reduce(max));
+    print(argMaxIndex);
+
+    // List<double> data = output[0];
+
+    // int argMaxIndex = 0;
+    // for (int i = 1; i < data.length; i++) {
+    //   if (data[i] > data[argMaxIndex]) {
+    //     argMaxIndex = i;
+    //   }
+    // }
+
+    // Retrieve the label list for the current model
+    var currentLabelList = labelLists[_currentModelType] ?? [];
+
+    return currentLabelList.isNotEmpty
+        ? currentLabelList[argMaxIndex]
+        : 'Label not found';
+
+    // return labelList[argMaxIndex];
   }
+}
+
+// Extension method to flatten a list of lists
+extension FlattenExtension<T> on List<List<T>> {
+  List<T> flatten() => expand((x) => x).toList();
 }

@@ -4,9 +4,7 @@ import 'dart:math';
 import 'package:get/get.dart';
 import 'package:pdiot_app/model/current_user.dart';
 import 'package:pdiot_app/utils/database_utils.dart';
-import 'dart:typed_data';
 import '../model/custom_model.dart';
-import '../utils/ui_utils.dart';
 
 class HomePageController extends GetxController {
   // Variables, and methods to manage the page's data and logic
@@ -24,7 +22,7 @@ class HomePageController extends GetxController {
     'Normal walking',
     'Lying down on left',
     'Lying down back'
-  ]; // Ad
+  ];
 
   RxString output = "Waiting for result"
       .obs; // consider using RxString for reactive programming if you're using GetX.
@@ -44,7 +42,7 @@ class HomePageController extends GetxController {
   }
 
   Future<void> load() async {
-    CustomModel().loadModel(ModelType.modelA);
+    CustomModel().loadModel(ModelType.task1);
   }
 
   Future<bool> saveSessionToDatabase(
