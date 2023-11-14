@@ -7,7 +7,7 @@ class CurrentUser extends GetxController {
   static CurrentUser get instance => Get.find<CurrentUser>();
 
   var id = '0'.obs;
-  var username = ''.obs;
+  var username = 'NOT LOGIN-DEFAULT'.obs;
   var userFiles = <String>[];
 
   @override
@@ -55,7 +55,7 @@ class Pref {
   static String userNameKey = 'userNameKey';
   static String fileNamesKey = 'fileNames'; // Key for the file names list
   static String defaultUserId = '0';
-  static String defaultUserName = '';
+  static String defaultUserName = 'NOT LOGIN-DEFAULT';
   static ThemeData theme = ThemeData();
 
   // Save user ID to shared preferences

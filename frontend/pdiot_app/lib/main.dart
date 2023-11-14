@@ -37,9 +37,6 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    // notifyHelper = NotifyHelper();
-    // notifyHelper.initializeNotification();
-    // notifyHelper.requestIOSPermissions();
   }
 
   @override
@@ -62,6 +59,15 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return mainContent(context);
+  }
+
+  Future<bool> checkIfUserLoggedIn() async {
+    await CurrentUser.instance.loadUser();
+    if (CurrentUser.instance.username.value == 'NOT LOGIN-DEFAULT') {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   Widget mainContent(BuildContext context) {
