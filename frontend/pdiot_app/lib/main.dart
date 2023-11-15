@@ -81,7 +81,6 @@ class _MainPageState extends State<MainPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Real-time Motion prediciton")),
       body: PageView.builder(
         controller: _pageController, // Use the instance variable here
         onPageChanged: (int index) {
@@ -92,29 +91,29 @@ class _MainPageState extends State<MainPage> {
           return pages[index % pages.length];
         },
       ),
-      bottomNavigationBar: SalomonBottomBar(
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: (int index) => _pageController.jumpToPage(index),
+        elevation: 0,
+        selectedLabelStyle: TextStyle(color: Color(0xff666F83), fontSize: 12),
+        unselectedLabelStyle: TextStyle(color: Color(0xff3E87F6), fontSize: 12),
         items: [
-          /// Home
-
-          SalomonBottomBarItem(
-            icon: const Icon(Icons.history),
-            title: Text("History", textScaleFactor: textScaleFactor),
-            selectedColor: Colors.blue[800],
-          ),
-
-          SalomonBottomBarItem(
-            icon: const Icon(Icons.home),
-            title: Text("Home", textScaleFactor: textScaleFactor),
-            selectedColor: Colors.green,
-          ),
-
-          SalomonBottomBarItem(
-            icon: const Icon(Icons.settings),
-            title: Text("Settings", textScaleFactor: textScaleFactor),
-            selectedColor: Colors.orange,
-          ),
+          BottomNavigationBarItem(
+              label: 'Test',
+              icon: Image.asset(
+                  'assets/images/Test_${_currentIndex == 0 ? 1 : 0}.png',
+                  width: 20)),
+          BottomNavigationBarItem(
+              label: 'Home',
+              icon: Image.asset(
+                  'assets/images/home_${_currentIndex == 1 ? 1 : 0}.png',
+                  width: 20)),
+          BottomNavigationBarItem(
+              label: 'Setting',
+              icon: Image.asset(
+                  'assets/images/Setting_${_currentIndex == 2 ? 1 : 0}.png',
+                  width: 20))
         ],
       ),
     );

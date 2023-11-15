@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:animated_icon_button/animated_icon_button.dart';
 import 'package:pdiot_app/model/custom_model.dart';
 import 'package:pdiot_app/utils/bluetooth_utils.dart';
 
@@ -89,6 +88,43 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(top: 0, child: Image.asset('assets/images/组 117@2x.png')),
+          Positioned(
+              top: 58,
+              left: 16,
+              right: 16,
+              child: Column(
+                children: [
+                  _buildMotionDisplayBox(),
+                  SizedBox(height: 20),
+                  buildChartBox('Accelerometer Data', chartData),
+                  SizedBox(height: 20),
+                  buildChartBox('Gyroscope Data', gyroData),
+                  SizedBox(height: 20),
+                ],
+              )),
+          Positioned(
+              bottom: 50,
+              left: 16,
+              right: 16,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _controller.isRecording = !_controller.isRecording;
+                    _controller.isRecording
+                        ? startRecording()
+                        : stopRecording();
+                  });
+                },
+                child: _buildControlBox(),
+              )),
+        ],
+      ),
+    );
+    return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
@@ -99,15 +135,14 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 20),
               buildChartBox(
                 'Accelerometer Data',
-                chartData.length <= 50
+                chartData.length <= 75
                     ? chartData
-                    : chartData.sublist(chartData.length - 50),
+                    : chartData.sublist(chartData.length - 75),
               ),
               const SizedBox(height: 20),
               buildChartBox('Gyroscope Data', gyroData),
               const SizedBox(height: 20),
               _buildControlBox(), // Updated widget for recording control
-              // ... [Other widgets]
             ],
           ),
         ),
@@ -116,14 +151,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget recordingButton() {
-    return ElevatedButton(
-      onPressed: () {
-        setState(() {
-          _controller.isRecording = !_controller.isRecording;
-          _controller.isRecording ? startRecording() : stopRecording();
-        });
-      },
-      child: Text(_controller.isRecording ? 'Stop' : 'Start'),
+    return Container(
+      width: double.infinity,
+      height: 56,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(colors: [
+            Color(0xff4A8DFF),
+            Color(0xff1D52FF),
+          ])),
+      child: Text(
+        _controller.isRecording ? 'Stop' : 'Start',
+        style: TextStyle(
+            fontSize: 18, color: Colors.white, fontWeight: FontWeight.w400),
+      ),
     );
   }
 
@@ -202,26 +244,18 @@ class _HomePageState extends State<HomePage> {
 
   // Redesigned Motion Display Box
   Widget _buildMotionDisplayBox() {
-    return AnimatedContainer(
-      duration: Duration(milliseconds: 500),
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        border: Border.all(
-            color: _getBorderColor(currentActivity)), // Dynamic border color
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Expanded(
-            child: Text(
-              "Current Activity: ${_controller.isRecording ? currentActivity : 'None'}",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Expanded(
+          child: Text(
+            "Current Activity: ${_controller.isRecording ? currentActivity : 'None'}",
+            // "Current Activity:",
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
-          _getActivityIcon(currentActivity), // Updated for specific activities
-        ],
-      ),
+        ),
+        _getActivityIcon(currentActivity), // Updated for specific activities
+      ],
     );
   }
 

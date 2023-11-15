@@ -10,20 +10,6 @@ class HomePageController extends GetxController {
   // Variables, and methods to manage the page's data and logic
   bool isRecording = false;
 
-  // static const activities = [
-  //   'Shuffle walking',
-  //   'Lying down on stomach',
-  //   'Ascending stairs',
-  //   'Sitting/standing',
-  //   'Running',
-  //   'Lying down right',
-  //   'Descending stairs',
-  //   'Miscellaneous movements',
-  //   'Normal walking',
-  //   'Lying down on left',
-  //   'Lying down back'
-  // ];
-
   RxString output = "Waiting for result"
       .obs; // consider using RxString for reactive programming if you're using GetX.
   CustomModel? model; // Make model nullable

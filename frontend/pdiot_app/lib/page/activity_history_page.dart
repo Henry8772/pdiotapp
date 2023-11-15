@@ -45,95 +45,233 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            dateTimeLinePicker(),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(top: 0, child: Image.asset('assets/images/组 117@2x.png')),
+          Positioned(
+            top: 54,
+            left: 16,
+            child: Text("History",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          ),
+          Positioned(
+            top: 108,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SingleChildScrollView(
+              child: Column(
                 children: [
-                  const Text(
-                    'Show data as:',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  _selectedTimeframe == 'Day'
+                      ? Container(
+                          margin: EdgeInsets.symmetric(horizontal: 16.0),
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Color(0xff1B1956).withOpacity(0.06),
+                                    offset: Offset(0, 13),
+                                    spreadRadius: 0,
+                                    blurRadius: 50)
+                              ]),
+                          child: EasyDateTimeLine(
+                            initialDate: _selectedDateTime,
+                            onDateChange: (selectedDate) {
+                              changeDateTime(selectedDate);
+                            },
+                            dayProps: const EasyDayProps(
+                              height: 56.0,
+                              width: 56.0,
+                              dayStructure: DayStructure.dayNumDayStr,
+                              inactiveDayStyle: DayStyle(
+                                borderRadius: 48.0,
+                                dayNumStyle: TextStyle(fontSize: 18.0),
+                              ),
+                              activeDayStyle: DayStyle(
+                                dayNumStyle: TextStyle(
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
+                            ),
+                            headerProps: const EasyHeaderProps(
+                              monthPickerType: MonthPickerType.switcher,
+                              selectedDateFormat:
+                                  SelectedDateFormat.fullDateDMY,
+                            ),
+                          ),
+                        )
+                      : SizedBox(),
+                  SizedBox(
+                    height: 20,
                   ),
-                  DropdownButton<String>(
-                    value: _selectedTimeframe,
-                    onChanged: (String? newValue) async {
-                      if (newValue != null) {
-                        setState(() {
-                          _selectedTimeframe = newValue;
-                        });
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Show data as:',
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xff333333)),
+                        ),
+                        Container(
+                          height: 36,
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(0xffD7D8DB),
+                              color: Colors.white,
+                              border: Border.all(
+                                  color: Color(0xffD7D8DB), width: 1)),
+                          child: DropdownButton<String>(
+                            value: _selectedTimeframe,
+                            underline: Container(),
+                            onChanged: (String? newValue) async {
+                              if (newValue != null) {
+                                setState(() {
+                                  _selectedTimeframe = newValue;
+                                });
 
-                        DateTime endTime = DateTime.now();
-                        DateTime startTime;
+                                DateTime endTime = DateTime.now();
+                                DateTime startTime;
 
-                        if (_selectedTimeframe == 'This Week') {
-                          startTime = endTime.subtract(Duration(days: 7));
-                        } else if (_selectedTimeframe == 'This Month') {
-                          startTime = DateTime(
-                              endTime.year, endTime.month - 1, endTime.day);
-                        } else {
-                          startTime = DateTime(
-                              endTime.year, endTime.month, endTime.day);
-                        }
+                                if (_selectedTimeframe == 'Week') {
+                                  startTime =
+                                      endTime.subtract(Duration(days: 7));
+                                } else if (_selectedTimeframe == 'Month') {
+                                  startTime = DateTime(endTime.year,
+                                      endTime.month - 1, endTime.day);
+                                } else {
+                                  startTime = DateTime(
+                                      endTime.year, endTime.month, endTime.day);
+                                }
 
-                        var activitiesRange = await DatabaseHelper
-                            .getTimeSpentOnActivitiesInRange(
-                                startTime, endTime);
-                        setState(() {
-                          activities = activitiesRange;
-                        });
-                      }
-                    },
-                    items: _timeframeOptions
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
+                                var activitiesRange = await DatabaseHelper
+                                    .getTimeSpentOnActivitiesInRange(
+                                        startTime, endTime);
+                                setState(() {
+                                  activities = activitiesRange;
+                                });
+                              }
+                            },
+                            items: _timeframeOptions
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!activities.isEmpty)
+                    SizedBox(
+                      height: 260, // Fixed height for the pie chart
+                      child: SfCircularChart(
+                        series: _createPieSeries(),
+                      ),
+                    ),
+                  if (activities.isEmpty)
+                    Center(
+                      child: const Padding(
+                        padding: EdgeInsets.only(top: 20),
+                        child: Text(
+                          'No available data',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ListView.separated(
+                    itemCount: activities.length,
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      String activityName = activities.keys.elementAt(index);
+                      int durationInSeconds =
+                          activities.values.elementAt(index);
+                      Color activityColor = pieColors[index %
+                          pieColors.length]; // Assign a color from the list
+
+                      return Container(
+                        height: 54,
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Color(0xff1B1956).withOpacity(0.06),
+                                  offset: Offset(0, 13),
+                                  spreadRadius: 0,
+                                  blurRadius: 50)
+                            ]),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                  color: activityColor,
+                                  borderRadius: BorderRadius.circular(24)),
+                              child: Icon(
+                                Icons.access_time,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                            SizedBox(
+                              width: 12,
+                            ),
+                            Expanded(
+                              child: Text(activityName,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xff333333),
+                                      fontSize: 16)),
+                            ),
+                            SizedBox(
+                              width: 12,
+                            ),
+                            Text(
+                              formatDuration(durationInSeconds),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xff333333),
+                                  fontSize: 14),
+                            )
+                          ],
+                        ),
                       );
-                    }).toList(),
+                      return Card(
+                        child: ListTile(
+                          leading: Icon(Icons.access_time,
+                              color: activityColor), // Use the assigned color
+                          title: Text(activityName,
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text(formatDuration(durationInSeconds)),
+                        ),
+                      );
+                    },
+                    separatorBuilder: (BuildContext context, int index) {
+                      return SizedBox(
+                        height: 10,
+                      );
+                    },
                   ),
                 ],
               ),
             ),
-            if (!activities.isEmpty)
-              SizedBox(
-                height: 300, // Fixed height for the pie chart
-                child: SfCircularChart(
-                  series: _createPieSeries(),
-                ),
-              ),
-            if (activities.isEmpty)
-              Center(
-                child: const Text(
-                  'No available data',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ListView.builder(
-              itemCount: activities.length,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                String activityName = activities.keys.elementAt(index);
-                int durationInSeconds = activities.values.elementAt(index);
-                Color activityColor = pieColors[
-                    index % pieColors.length]; // Assign a color from the list
-                return Card(
-                  child: ListTile(
-                    leading: Icon(Icons.access_time,
-                        color: activityColor), // Use the assigned color
-                    title: Text(activityName,
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(formatDuration(durationInSeconds)),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

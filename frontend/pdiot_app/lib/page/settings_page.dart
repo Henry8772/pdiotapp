@@ -18,71 +18,29 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(
-        padding: EdgeInsets.all(8.0),
+      body: Stack(
+        alignment: Alignment.center,
         children: [
-          Card(
-            child: ListTile(
-              leading: Icon(Icons.account_circle, size: 40.0), // Larger icon
-              title: Obx(() => Text(
-                    CurrentUser.instance.username.value,
-                    style: Theme.of(context).textTheme.headline6,
-                  )),
-              onTap: () {
-                // User profile tap action
-              },
-            ),
+          Positioned(top: 0, child: Image.asset('assets/images/组 117@2x.png')),
+          const Positioned(
+            top: 54,
+            left: 16,
+            child: Text("Settings",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           ),
-          Divider(),
-          ListTile(
-            title:
-                Text('Re-login', style: Theme.of(context).textTheme.subtitle1),
-            trailing: Icon(Icons.login),
-            onTap: () {
-              Get.to(() => LoginPage());
-            },
-          ),
-          Divider(),
-          ListTile(
-            title: Text('Connect to Bluetooth',
-                style: Theme.of(context).textTheme.subtitle1),
-            subtitle: Padding(
-              padding: EdgeInsets.only(top: 8.0),
-              child: _isBluetoothConnected
-                  ? Text('Connected to $_connectedDeviceId')
-                  : TextField(
-                      controller: _bluetoothDeviceIdController,
-                      decoration: const InputDecoration(
-                        labelText: 'Enter Bluetooth Device ID',
-                        border: OutlineInputBorder(),
-                        isDense: true, // Reduces padding
-                      ),
-                    ),
-            ),
-            isThreeLine: true,
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                primary: Theme.of(context).primaryColor,
-                padding: EdgeInsets.symmetric(vertical: 12.0),
-                textStyle: TextStyle(fontSize: 18),
-              ),
-              onPressed: connectBluetooth,
-              child: Text('Connect to Bluetooth'),
-            ),
-          ),
+          Positioned(top: 98, left: 16, right: 16, child: userCard()),
+          Positioned(
+            top: 240,
+            left: 16,
+            right: 16,
+            child: bluetoothWidget(),
+          )
         ],
       ),
     );
   }
 
   void connectBluetooth() {
-    // if (bluetoothInstance == null) {
-    //   setOnNewSensorDataCallback(addSensorData);
-    // }
-
     BluetoothConnect().scanForDevices('D9:A7:42:37:ED:C3',
         onConnectionChanged: (isConnected) {
       if (isConnected) {
@@ -105,6 +63,122 @@ class _SettingsPageState extends State<SettingsPage> {
       _isBluetoothConnected = false;
       _connectedDeviceId = '';
     });
+  }
+
+  Widget userCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 20),
+      margin: const EdgeInsets.only(top: 20), // Added margin for spacing
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.account_circle, size: 40.0),
+        title: Obx(() => Text(
+              CurrentUser.instance.username.value,
+              maxLines: 1, // Ensures the text doesn't span more than one line
+              overflow:
+                  TextOverflow.ellipsis, // Adds an ellipsis if text is too long
+              style: const TextStyle(
+                color: Color(0xff333333),
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            )),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Re-login',
+              style: TextStyle(color: Color(0xff333333), fontSize: 18),
+            ),
+            const SizedBox(width: 8),
+            Image.asset(
+              'assets/images/切图 2.png',
+              width: 20,
+            ),
+          ],
+        ),
+        onTap: () {
+          Get.to(() => LoginPage());
+        },
+      ),
+    );
+  }
+
+  Widget bluetoothWidget() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Connect to Bluetooth',
+            style: TextStyle(
+              color: Color(0xff333333),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          SizedBox(
+            height: 48,
+            child: TextField(
+              controller: _bluetoothDeviceIdController,
+              style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                  color: Color(0xff333333)),
+              decoration: InputDecoration(
+                  hintText: 'Enter Bluetooth Device ID',
+                  hintStyle: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14,
+                      color: Color(0xffD7D8DB)),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                  fillColor: Color(0xffF4F5F6).withOpacity(0.8),
+                  filled: true,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none)),
+            ),
+          ),
+          SizedBox(
+            height: 40,
+          ),
+          GestureDetector(
+            onTap: () {
+              connectBluetooth();
+            },
+            child: Container(
+              width: double.infinity,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(colors: [
+                    Color(0xff4A8DFF),
+                    Color(0xff1D52FF),
+                  ])),
+              child: Text(
+                'Connect to Bluetooth',
+                style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
   }
 
   @override
