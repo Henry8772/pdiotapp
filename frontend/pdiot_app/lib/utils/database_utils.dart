@@ -36,17 +36,17 @@ class DatabaseHelper {
   static Future<void> _populateActivities(Database db) async {
     // List of activities to be added
     const activities = [
-      'Shuffle walking',
-      'Lying down on stomach',
       'Ascending stairs',
-      'Sitting/standing',
-      'Running',
-      'Lying down right',
       'Descending stairs',
+      'Lying down back',
+      'Lying down on left',
+      'Lying down right',
+      'Lying down on stomach',
       'Miscellaneous movements',
       'Normal walking',
-      'Lying down on left',
-      'Lying down back'
+      'Running',
+      'Shuffle walking',
+      'Sitting/standing',
     ]; // Add more activities here
 
     for (String activity in activities) {

@@ -124,30 +124,6 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              _buildMotionDisplayBox(),
-              const SizedBox(height: 20),
-              buildChartBox(
-                'Accelerometer Data',
-                chartData.length <= 75
-                    ? chartData
-                    : chartData.sublist(chartData.length - 75),
-              ),
-              const SizedBox(height: 20),
-              buildChartBox('Gyroscope Data', gyroData),
-              const SizedBox(height: 20),
-              _buildControlBox(), // Updated widget for recording control
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Widget recordingButton() {
@@ -157,13 +133,13 @@ class _HomePageState extends State<HomePage> {
       alignment: Alignment.center,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(colors: [
+          gradient: const LinearGradient(colors: [
             Color(0xff4A8DFF),
             Color(0xff1D52FF),
           ])),
       child: Text(
         _controller.isRecording ? 'Stop' : 'Start',
-        style: TextStyle(
+        style: const TextStyle(
             fontSize: 18, color: Colors.white, fontWeight: FontWeight.w400),
       ),
     );
@@ -261,7 +237,7 @@ class _HomePageState extends State<HomePage> {
 
   // Function to get dynamic border color based on activity
   // Function to get dynamic border color based on activity
-  Color _getBorderColor(String activity) {
+  Color getActivityColor(String activity) {
     switch (activity) {
       case "Ascending stairs":
         return Colors.deepOrange;
@@ -324,7 +300,7 @@ class _HomePageState extends State<HomePage> {
       default:
         icon = Icons.help_outline;
     }
-    return Icon(icon, size: 30);
+    return Icon(icon, size: 30, color: getActivityColor(activity));
   }
 
   @override

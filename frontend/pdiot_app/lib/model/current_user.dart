@@ -9,6 +9,7 @@ class CurrentUser extends GetxController {
   var id = '0'.obs;
   var username = 'NOT LOGIN-DEFAULT'.obs;
   var userFiles = <String>[];
+  String bluetoothId = '';
 
   @override
   void onInit() {
@@ -19,6 +20,7 @@ class CurrentUser extends GetxController {
   Future<void> loadUser() async {
     id.value = await Pref.getUserId();
     username.value = await Pref.getUserName();
+    bluetoothId = await Pref.getBluetoothID();
     await loadUserFiles();
   }
 
@@ -55,6 +57,8 @@ class Pref {
   static String userNameKey = 'userNameKey';
   static String fileNamesKey = 'fileNames'; // Key for the file names list
   static String defaultUserId = '0';
+  static String bluetoothIDKey = 'bluetoothKey';
+  static String defaultBluetoothId = '__:__:__:__:__:__';
   static String defaultUserName = 'NOT LOGIN-DEFAULT';
   static ThemeData theme = ThemeData();
 
@@ -70,9 +74,20 @@ class Pref {
     return prefs.getString(userIdKey) ?? defaultUserId;
   }
 
-  static Future<void> saveUserName(String userId) async {
+  static Future<void> saveBluetoothId(String bluetoothId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString(userNameKey, userId);
+    prefs.setString(bluetoothIDKey, bluetoothId);
+  }
+
+  // Load user ID from shared preferences
+  static Future<String> getBluetoothID() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(bluetoothIDKey) ?? defaultBluetoothId;
+  }
+
+  static Future<void> saveUserName(String userName) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString(userNameKey, userName);
   }
 
   // Load user ID from shared preferences

@@ -117,22 +117,17 @@ class CustomModel {
 
     List<double> data = output.flatten();
     int argMaxIndex = data.indexWhere((element) => element == data.reduce(max));
+    if (argMaxIndex == -1) {
+      return 'Miscellaneous movements';
+    } else {
+      var currentLabelList = labelLists[_currentModelType] ?? [];
 
-    // List<double> data = output[0];
-
-    // int argMaxIndex = 0;
-    // for (int i = 1; i < data.length; i++) {
-    //   if (data[i] > data[argMaxIndex]) {
-    //     argMaxIndex = i;
-    //   }
-    // }
+      return currentLabelList.isNotEmpty
+          ? currentLabelList[argMaxIndex]
+          : 'Miscellaneous movements';
+    }
 
     // Retrieve the label list for the current model
-    var currentLabelList = labelLists[_currentModelType] ?? [];
-
-    return currentLabelList.isNotEmpty
-        ? currentLabelList[argMaxIndex]
-        : 'Label not found';
   }
 }
 

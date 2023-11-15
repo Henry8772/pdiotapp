@@ -10,10 +10,19 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final TextEditingController _bluetoothDeviceIdController =
-      TextEditingController();
+  TextEditingController _bluetoothDeviceIdController = TextEditingController();
   bool _isBluetoothConnected = false;
+  bool _isConnecting = false;
   String _connectedDeviceId = '';
+  // String _enteredDeviceId = CurrentUser.instance.bluetoothId;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the TextEditingController with an initial value
+    _bluetoothDeviceIdController =
+        TextEditingController(text: CurrentUser.instance.bluetoothId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,19 +49,26 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void connectBluetooth() {
-    BluetoothConnect().scanForDevices('D9:A7:42:37:ED:C3',
+  void connectBluetooth(String deviceId) {
+    Pref.saveBluetoothId(deviceId);
+    setState(() {
+      _isConnecting = true;
+    });
+    BluetoothConnect().scanForDevices(deviceId,
         onConnectionChanged: (isConnected) {
       if (isConnected) {
-        if (isConnected) {
-          // Show notification
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Bluetooth is connected'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
+        setState(() {
+          _isBluetoothConnected = isConnected;
+          _isConnecting = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Bluetooth is connected'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Show notification
       }
     });
   }
@@ -130,14 +146,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           SizedBox(
             height: 48,
-            child: TextField(
+            child: TextFormField(
               controller: _bluetoothDeviceIdController,
               style: TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 14,
                   color: Color(0xff333333)),
               decoration: InputDecoration(
-                  hintText: 'Enter Bluetooth Device ID',
                   hintStyle: TextStyle(
                       fontWeight: FontWeight.w400,
                       fontSize: 14,
@@ -155,20 +170,33 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           GestureDetector(
             onTap: () {
-              connectBluetooth();
+              if (!_isBluetoothConnected && !_isConnecting) {
+                connectBluetooth(_bluetoothDeviceIdController.text);
+              }
+              // connectBluetooth(_bluetoothDeviceIdController.text);
             },
             child: Container(
               width: double.infinity,
               height: 56,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: LinearGradient(colors: [
-                    Color(0xff4A8DFF),
-                    Color(0xff1D52FF),
-                  ])),
+                borderRadius: BorderRadius.circular(16),
+                gradient: _isBluetoothConnected
+                    ? LinearGradient(colors: [
+                        Colors.green[400]!,
+                        Colors.green[700]!
+                      ]) // Gradient for "Connected" state
+                    : LinearGradient(colors: [
+                        Color(0xff4A8DFF),
+                        Color(0xff1D52FF)
+                      ]), // Original gradient
+              ),
               child: Text(
-                'Connect to Bluetooth',
+                _isConnecting
+                    ? 'Connecting Device'
+                    : _isBluetoothConnected
+                        ? 'Connected'
+                        : 'Connect to RESpeck', // Text based on connection status
                 style: TextStyle(
                     fontSize: 18,
                     color: Colors.white,
