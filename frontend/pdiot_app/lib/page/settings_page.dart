@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:pdiot_app/model/current_user.dart';
 import 'package:pdiot_app/page/login_page.dart';
 import 'package:pdiot_app/utils/bluetooth_utils.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -49,11 +50,26 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void connectBluetooth(String deviceId) {
+  Future<bool> checkBluetoothPermissionStatus() async {
+    var bluetoothStatus = await Permission.bluetooth.status;
+    var locationStatus = await Permission.location.status;
+
+    while (!bluetoothStatus.isGranted || !locationStatus.isGranted) {
+      await Permission.bluetooth.request();
+      await Permission.location.request();
+
+      bluetoothStatus = await Permission.bluetooth.status;
+      locationStatus = await Permission.location.status;
+    }
+    return true;
+  }
+
+  void connectBluetooth(String deviceId) async {
     Pref.saveBluetoothId(deviceId);
     setState(() {
       _isConnecting = true;
     });
+
     BluetoothConnect().scanForDevices(deviceId,
         onConnectionChanged: (isConnected) {
       if (isConnected) {

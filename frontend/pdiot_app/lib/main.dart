@@ -5,6 +5,8 @@ import 'package:pdiot_app/page/activity_history_page.dart';
 import 'package:pdiot_app/page/settings_page.dart';
 import 'package:pdiot_app/utils/database_utils.dart';
 import 'model/current_user.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 import 'page/homepage.dart';
 
 void main() {
@@ -35,6 +37,28 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    requestPermissions();
+  }
+
+  Future<void> requestPermissions() async {
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.location,
+      Permission.bluetoothScan,
+      Permission.bluetoothAdvertise,
+      Permission.bluetoothConnect
+    ].request();
+    while (!statuses[Permission.location]!.isGranted ||
+        !statuses[Permission.bluetoothScan]!.isGranted &&
+            !statuses[Permission.bluetoothAdvertise]!.isGranted &&
+            !statuses[Permission.bluetoothConnect]!.isGranted) {
+      Map<Permission, PermissionStatus> statuses = await [
+        Permission.location,
+        Permission.bluetoothScan,
+        Permission.bluetoothAdvertise,
+        Permission.bluetoothConnect
+      ].request();
+    }
+    // Handle the permission state (granted, denied, etc.)
   }
 
   @override
@@ -45,11 +69,8 @@ class _MainPageState extends State<MainPage> {
   }
 
   final pages = [
-    // const LoginPage(),
     ActivitiHistoryPage(),
     HomePage(),
-    // ChartPage(),
-
     SettingsPage(),
   ];
 

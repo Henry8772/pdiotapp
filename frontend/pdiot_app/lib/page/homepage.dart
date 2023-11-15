@@ -85,6 +85,16 @@ class _HomePageState extends State<HomePage> {
     currentSessionActivities.clear();
   }
 
+  List<SensorData> getChartData() {
+    if (chartData.length > 50) {
+      // Return the last 50 elements
+      return chartData.sublist(chartData.length - 50);
+    } else {
+      // Return the entire list if it has 50 or fewer elements
+      return chartData;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,9 +110,9 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   _buildMotionDisplayBox(),
                   SizedBox(height: 20),
-                  buildChartBox('Accelerometer Data', chartData),
+                  buildChartBox('Accelerometer Data', getChartData()),
                   SizedBox(height: 20),
-                  buildChartBox('Gyroscope Data', gyroData),
+                  buildChartBox('Gyroscope Data', getChartData()),
                   SizedBox(height: 20),
                 ],
               )),
