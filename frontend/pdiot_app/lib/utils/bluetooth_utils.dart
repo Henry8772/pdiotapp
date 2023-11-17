@@ -86,6 +86,8 @@ class BluetoothConnect {
   final StreamController<Map<String, dynamic>> _dataStreamController =
       StreamController.broadcast();
 
+  bool isConnected = false;
+
   final uuidRespeckLive = Uuid.parse("00002010-0000-1000-8000-00805f9b34fb");
   final uuidRespeckLiveV4 = Uuid.parse("00001524-1212-efde-1523-785feabcd125");
   final uuidRespeckImu = Uuid.parse("00001527-1212-efde-1523-785feabcd125");
@@ -95,15 +97,17 @@ class BluetoothConnect {
 
   // Callback instance
   ConnectionCallback? onConnectionChanged;
-  String? _connectedDeviceId;
 
   // Expose a stream to listen to data
   // Stream<Map<String, dynamic>> get dataStream => _dataStreamController.stream;
 
+  bool isBluetoothConnected() {
+    return isConnected;
+  }
+
   void connectToDevice(DiscoveredDevice device,
       {ConnectionCallback? onConnectionChanged}) {
     this.onConnectionChanged = onConnectionChanged;
-    _connectedDeviceId = device.id;
 
     _ble
         .connectToDevice(
@@ -114,6 +118,7 @@ class BluetoothConnect {
         .listen((connectionState) {
       if (connectionState.connectionState == DeviceConnectionState.connected) {
         print('Device connected');
+        isConnected = true;
         discoverServices(device.id);
 
         // Trigger the callback on successful connection
@@ -181,6 +186,7 @@ class BluetoothConnect {
 
   // Ensure to close the stream controller when it's no longer needed
   void dispose() {
+    isConnected = false;
     _dataStreamController.close();
   }
 }

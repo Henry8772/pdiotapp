@@ -10,9 +10,6 @@ class LoginController extends GetxController {
     final users = await DatabaseHelper.getUsers();
 
     for (var user in users!) {
-      // print(user['username']);
-      print(user);
-      // print(user['password']);
       if (user['username'] == username && user['password'] == password) {
         // Login successful
         print('user found');

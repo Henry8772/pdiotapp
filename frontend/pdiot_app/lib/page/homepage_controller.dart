@@ -30,24 +30,4 @@ class HomePageController extends GetxController {
   Future<void> load() async {
     CustomModel().loadModel(ModelType.task1);
   }
-
-  Future<bool> saveSessionToDatabase(
-      Map<String, int> sessionDurations, DateTime startTime) async {
-    int userId = int.parse(CurrentUser.instance.id.value);
-    int sessionId = await DatabaseHelper.createNewSession(userId, startTime);
-
-    sessionDurations.forEach((activityName, duration) async {
-      int activityId = await DatabaseHelper.getActivityIdByName(
-          activityName); // Get activity ID by name
-      Map<String, dynamic> sessionActivity = {
-        'sessionId': sessionId,
-        'activityId': activityId,
-        'duration': duration,
-      };
-
-      await DatabaseHelper.insertSessionActivity(sessionActivity);
-    });
-
-    return true;
-  }
 }

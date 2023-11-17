@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:pdiot_app/model/current_user.dart';
 import 'package:pdiot_app/model/custom_model.dart';
 import 'package:pdiot_app/utils/bluetooth_utils.dart';
+import 'package:pdiot_app/utils/classification_utils.dart';
+import 'package:pdiot_app/utils/database_utils.dart';
 
 import '../utils/ui_utils.dart';
 
@@ -15,10 +18,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  HomePageController _controller = HomePageController();
+  // HomePageController _controller = HomePageController();
   late StreamSubscription _dataSubscription;
 
   List<Float32List> acc = [];
+  bool isRecording = false;
   List<Float32List> gyro = [];
 
   @override
@@ -38,8 +42,37 @@ class _HomePageState extends State<HomePage> {
   String currentActivity = "None";
   bool modelLoaded = false;
 
+  void checkBeforeStartRecording() {
+    bool bluetooth = BluetoothConnect().isBluetoothConnected();
+    if (modelLoaded && bluetooth) {
+      startRecording();
+    } else if (!modelLoaded && !bluetooth) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please load model and connect bluetooth in Settings"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else if (modelLoaded && !bluetooth) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please connect bluetooth in Settings"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else if (!modelLoaded && bluetooth) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please load model first"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   void startRecording() {
     startTime = DateTime.now();
+    isRecording = true;
 
     _dataSubscription = BluetoothConnect().dataStream.listen((data) async {
       if (!mounted) return;
@@ -86,9 +119,9 @@ class _HomePageState extends State<HomePage> {
 
   void stopRecording() async {
     counter = 0;
+    isRecording = false;
     _dataSubscription.cancel();
-    await _controller.saveSessionToDatabase(
-        currentSessionActivities, startTime);
+    await saveSessionToDatabase(currentSessionActivities, startTime);
     currentSessionActivities.clear();
   }
 
@@ -110,6 +143,26 @@ class _HomePageState extends State<HomePage> {
       // Return the entire list if it has 50 or fewer elements
       return chartGyroData;
     }
+  }
+
+  Future<bool> saveSessionToDatabase(
+      Map<String, int> sessionDurations, DateTime startTime) async {
+    int userId = int.parse(CurrentUser.instance.id.value);
+    int sessionId = await DatabaseHelper.createNewSession(userId, startTime);
+
+    sessionDurations.forEach((activityName, duration) async {
+      int activityId = await DatabaseHelper.getActivityIdByName(
+          activityName); // Get activity ID by name
+      Map<String, dynamic> sessionActivity = {
+        'sessionId': sessionId,
+        'activityId': activityId,
+        'duration': duration,
+      };
+
+      await DatabaseHelper.insertSessionActivity(sessionActivity);
+    });
+
+    return true;
   }
 
   @override
@@ -140,10 +193,7 @@ class _HomePageState extends State<HomePage> {
               child: GestureDetector(
                 onTap: () {
                   setState(() {
-                    _controller.isRecording = !_controller.isRecording;
-                    _controller.isRecording
-                        ? startRecording()
-                        : stopRecording();
+                    isRecording ? stopRecording() : checkBeforeStartRecording();
                   });
                 },
                 child: _buildControlBox(),
@@ -165,7 +215,7 @@ class _HomePageState extends State<HomePage> {
             Color(0xff1D52FF),
           ])),
       child: Text(
-        _controller.isRecording ? 'Stop' : 'Start',
+        isRecording ? 'Stop' : 'Start',
         style: const TextStyle(
             fontSize: 18, color: Colors.white, fontWeight: FontWeight.w400),
       ),
@@ -265,82 +315,14 @@ class _HomePageState extends State<HomePage> {
       children: <Widget>[
         Expanded(
           child: Text(
-            "Current Activity: ${_controller.isRecording ? currentActivity : 'None'}",
+            "Current Activity: ${isRecording ? currentActivity : 'None'}",
             // "Current Activity:",
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
-        _getActivityIcon(currentActivity), // Updated for specific activities
+        getActivityIcon(currentActivity), // Updated for specific activities
       ],
     );
-  }
-
-  // Function to get dynamic border color based on activity
-  // Function to get dynamic border color based on activity
-  Color getActivityColor(String activity) {
-    switch (activity) {
-      case "Ascending stairs":
-        return Colors.deepOrange;
-      case "Descending stairs":
-        return Colors.brown;
-      case "Lying down back":
-        return Colors.lightBlue;
-      case "Lying down on left":
-        return Colors.purple;
-      case "Lying down right":
-        return Colors.pink;
-      case "Lying down on stomach":
-        return Colors.teal;
-      case "Miscellaneous movements":
-        return Colors.grey;
-      case "Normal walking":
-        return Colors.green;
-      case "Running":
-        return Colors.red;
-      case "Shuffle walking":
-        return Colors.amber;
-      case "Sitting/standing":
-        return Colors.indigo;
-      default:
-        return Colors
-            .blue; // Default color when no specific activity is detected
-    }
-  }
-
-  Widget _getActivityIcon(String activity) {
-    IconData icon;
-    switch (activity) {
-      case "Ascending stairs":
-        icon = Icons.arrow_upward;
-        break;
-      case "Descending stairs":
-        icon = Icons.arrow_downward;
-        break;
-      case "Lying down back":
-      case "Lying down on left":
-      case "Lying down right":
-      case "Lying down on stomach":
-        icon = Icons.bed;
-        break;
-      case "Miscellaneous movements":
-        icon = Icons.shuffle;
-        break;
-      case "Normal walking":
-        icon = Icons.directions_walk;
-        break;
-      case "Running":
-        icon = Icons.directions_run;
-        break;
-      case "Shuffle walking":
-        icon = Icons.transfer_within_a_station;
-        break;
-      case "Sitting/standing":
-        icon = Icons.event_seat;
-        break;
-      default:
-        icon = Icons.help_outline;
-    }
-    return Icon(icon, size: 30, color: getActivityColor(activity));
   }
 
   @override
