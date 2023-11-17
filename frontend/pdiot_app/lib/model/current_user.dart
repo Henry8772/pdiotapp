@@ -59,7 +59,7 @@ class Pref {
   static String fileNamesKey = 'fileNames'; // Key for the file names list
   static String defaultUserId = '0';
   static String bluetoothIDKey = 'bluetoothKey';
-  static String defaultBluetoothId = '__:__:__:__:__:__';
+  static String defaultBluetoothId = 'AB:CD:EF:12:34';
   static String defaultUserName = 'NOT LOGIN-DEFAULT';
   static ThemeData theme = ThemeData();
 

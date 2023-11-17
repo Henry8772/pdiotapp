@@ -14,7 +14,6 @@ class _SettingsPageState extends State<SettingsPage> {
   TextEditingController _bluetoothDeviceIdController = TextEditingController();
   bool _isBluetoothConnected = false;
   bool _isConnecting = false;
-  String _connectedDeviceId = '';
   // String _enteredDeviceId = CurrentUser.instance.bluetoothId;
 
   @override
@@ -78,8 +77,8 @@ class _SettingsPageState extends State<SettingsPage> {
           _isConnecting = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Bluetooth is connected'),
+          const SnackBar(
+            content: Text('Bluetooth is connected'),
             backgroundColor: Colors.green,
           ),
         );
@@ -93,7 +92,6 @@ class _SettingsPageState extends State<SettingsPage> {
     // Implement your disconnection logic here
     setState(() {
       _isBluetoothConnected = false;
-      _connectedDeviceId = '';
     });
   }
 
@@ -151,7 +149,7 @@ class _SettingsPageState extends State<SettingsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Connect to Bluetooth',
+            'Connect to RESpeck via Bluetooth',
             style: TextStyle(
               color: Color(0xff333333),
               fontSize: 16,
@@ -165,25 +163,61 @@ class _SettingsPageState extends State<SettingsPage> {
             height: 48,
             child: TextFormField(
               controller: _bluetoothDeviceIdController,
-              style: TextStyle(
+              style: const TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 14,
                   color: Color(0xff333333)),
               decoration: InputDecoration(
-                  hintStyle: TextStyle(
+                  hintStyle: const TextStyle(
                       fontWeight: FontWeight.w400,
                       fontSize: 14,
                       color: Color(0xffD7D8DB)),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                  fillColor: Color(0xffF4F5F6).withOpacity(0.8),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  fillColor: const Color(0xffF4F5F6).withOpacity(0.8),
                   filled: true,
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide.none)),
             ),
           ),
-          SizedBox(
-            height: 40,
+          const SizedBox(
+            height: 20,
+          ),
+          Image.asset('assets/images/Respeck.png'),
+          const Text(
+              'Device ID is located on back and follows format AB:CD:EF:12:34.'),
+          const SizedBox(
+            height: 10,
+          ),
+          RichText(
+            text: const TextSpan(
+              style: TextStyle(
+                // Default text style for all spans
+                color: Colors.black, // Specify the color for the text here
+              ),
+              children: <TextSpan>[
+                TextSpan(
+                  text: 'Place the sensor on lower ribcage with blue side ',
+                ),
+                TextSpan(
+                  text: 'touching the skin',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text: ', ensuring label is ',
+                ),
+                TextSpan(
+                  text: 'readable',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text: ' when placing it on your chest.',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(
+            height: 20,
           ),
           GestureDetector(
             onTap: () {
@@ -203,7 +237,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         Colors.green[400]!,
                         Colors.green[700]!
                       ]) // Gradient for "Connected" state
-                    : LinearGradient(colors: [
+                    : const LinearGradient(colors: [
                         Color(0xff4A8DFF),
                         Color(0xff1D52FF)
                       ]), // Original gradient
@@ -214,7 +248,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     : _isBluetoothConnected
                         ? 'Connected'
                         : 'Connect to RESpeck', // Text based on connection status
-                style: TextStyle(
+                style: const TextStyle(
                     fontSize: 18,
                     color: Colors.white,
                     fontWeight: FontWeight.w400),
