@@ -1,4 +1,5 @@
 import 'package:pdiot_app/model/current_user.dart';
+import 'package:pdiot_app/utils/classification_utils.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -35,19 +36,7 @@ class DatabaseHelper {
 
   static Future<void> _populateActivities(Database db) async {
     // List of activities to be added
-    const activities = [
-      'Ascending stairs',
-      'Descending stairs',
-      'Lying down back',
-      'Lying down on left',
-      'Lying down right',
-      'Lying down on stomach',
-      'Miscellaneous movements',
-      'Normal walking',
-      'Running',
-      'Shuffle walking',
-      'Sitting/standing',
-    ]; // Add more activities here
+    List<String> activities = physicalClasses;
 
     for (String activity in activities) {
       await db.insert('activities', {'name': activity});

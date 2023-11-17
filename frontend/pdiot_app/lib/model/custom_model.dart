@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:pdiot_app/utils/classification_utils.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 enum ModelType { task1, task2, task3 }
@@ -18,19 +19,7 @@ class CustomModel {
   }
 
   final Map<ModelType, List<String>> labelLists = {
-    ModelType.task1: [
-      'Ascending stairs',
-      'Descending stairs',
-      'Lying down back',
-      'Lying down on left',
-      'Lying down right',
-      'Lying down on stomach',
-      'Miscellaneous movements',
-      'Normal walking',
-      'Running',
-      'Shuffle walking',
-      'Sitting/standing',
-    ],
+    ModelType.task1: physicalClasses,
     ModelType.task2: [
       'Miscellaneous movements',
       'Lying down right',

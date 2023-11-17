@@ -19,6 +19,7 @@ class _HomePageState extends State<HomePage> {
   late StreamSubscription _dataSubscription;
 
   List<Float32List> acc = [];
+  List<Float32List> gyro = [];
 
   @override
   void initState() {
@@ -26,8 +27,8 @@ class _HomePageState extends State<HomePage> {
     modelLoaded = isModelLoaded(selectedModel);
   }
 
-  List<SensorData> chartData = [];
-  List<SensorData> gyroData = []; // L
+  List<SensorData> chartAccData = [];
+  List<SensorData> chartGyroData = []; // L
   double randomValue() => Random().nextDouble() * 100;
   Map<String, int> currentSessionActivities = {};
   DateTime startTime = DateTime.now();
@@ -43,12 +44,16 @@ class _HomePageState extends State<HomePage> {
     _dataSubscription = BluetoothConnect().dataStream.listen((data) async {
       if (!mounted) return;
       setState(() {
-        chartData
+        chartAccData
             .add(SensorData(counter, data['accX'], data['accY'], data['accZ']));
+        chartAccData.add(
+            SensorData(counter, data['gyroX'], data['gyroY'], data['gyroZ']));
       });
       counter += 1;
 
       acc.add(Float32List.fromList([data['accX'], data['accY'], data['accZ']]));
+      gyro.add(
+          Float32List.fromList([data['gyroX'], data['gyroY'], data['gyroZ']]));
 
       if (acc.length % 25 == 0 && acc.length >= 50) {
         List<Float32List> last2SecData = acc.sublist(acc.length - 50);
@@ -87,13 +92,23 @@ class _HomePageState extends State<HomePage> {
     currentSessionActivities.clear();
   }
 
-  List<SensorData> getChartData() {
-    if (chartData.length > 50) {
+  List<SensorData> getAccChartData() {
+    if (chartAccData.length > 50) {
       // Return the last 50 elements
-      return chartData.sublist(chartData.length - 50);
+      return chartAccData.sublist(chartAccData.length - 50);
     } else {
       // Return the entire list if it has 50 or fewer elements
-      return chartData;
+      return chartAccData;
+    }
+  }
+
+  List<SensorData> getGyroChartData() {
+    if (chartGyroData.length > 50) {
+      // Return the last 50 elements
+      return chartGyroData.sublist(chartGyroData.length - 50);
+    } else {
+      // Return the entire list if it has 50 or fewer elements
+      return chartGyroData;
     }
   }
 
@@ -112,9 +127,9 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   _buildMotionDisplayBox(),
                   SizedBox(height: 20),
-                  buildChartBox('Accelerometer Data', getChartData()),
+                  buildChartBox('Accelerometer Data', getAccChartData()),
                   SizedBox(height: 20),
-                  buildChartBox('Gyroscope Data', getChartData()),
+                  buildChartBox('Gyroscope Data', getGyroChartData()),
                   SizedBox(height: 20),
                 ],
               )),

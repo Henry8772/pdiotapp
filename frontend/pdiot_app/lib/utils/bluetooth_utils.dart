@@ -169,7 +169,10 @@ class BluetoothConnect {
       _dataStreamController.add({
         'accX': imuPacket.sensorData.first.acc.x,
         'accY': imuPacket.sensorData.first.acc.y,
-        'accZ': imuPacket.sensorData.first.acc.z
+        'accZ': imuPacket.sensorData.first.acc.z,
+        'gyroX': imuPacket.sensorData.first.gyro.x,
+        'gyroY': imuPacket.sensorData.first.gyro.y,
+        'gyroZ': imuPacket.sensorData.first.gyro.z
       });
     }, onError: (dynamic error) {
       print(error);
