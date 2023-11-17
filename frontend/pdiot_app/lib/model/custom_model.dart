@@ -52,6 +52,11 @@ class CustomModel {
     ],
   };
 
+  // Function to check if a model is loaded
+  bool isModelLoaded(ModelType selectedModel) {
+    return isolateInterpreter != null && _currentModelType == selectedModel;
+  }
+
   // Helper method to get the output shape based on model type
   List<int> getOutputShape(ModelType? modelType) {
     switch (modelType) {

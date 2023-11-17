@@ -23,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    modelLoaded = isModelLoaded(selectedModel);
   }
 
   List<SensorData> chartData = [];
@@ -34,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   ModelType selectedModel = ModelType.task1; // Default selected value
   List<ModelType> models = ModelType.values;
   String currentActivity = "None";
+  bool modelLoaded = false;
 
   void startRecording() {
     startTime = DateTime.now();
@@ -163,9 +165,8 @@ class _HomePageState extends State<HomePage> {
         DropdownButton<ModelType>(
           value: selectedModel,
           onChanged: (ModelType? newValue) {
-            setState(() {
-              selectedModel = newValue!;
-            });
+            selectedModel = newValue!;
+            setState(() {});
           },
           items: models.map<DropdownMenuItem<ModelType>>((ModelType model) {
             return DropdownMenuItem<ModelType>(
@@ -180,21 +181,35 @@ class _HomePageState extends State<HomePage> {
         // Load button
         ElevatedButton(
           onPressed: () async {
-            bool loaded = await CustomModel().loadModel(selectedModel);
-            if (loaded) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content:
-                      Text("Model ${modelToString(selectedModel)} is loaded"),
-                  backgroundColor: Colors.green,
-                ),
-              );
+            if (!modelLoaded) {
+              modelLoaded = await CustomModel().loadModel(selectedModel);
+              if (modelLoaded) {
+                setState(() {}); // Trigger a rebuild to update the UI
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content:
+                        Text("Model ${modelToString(selectedModel)} is loaded"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
             }
           },
-          child: const Text("Load Model"),
+          child: Text(modelLoaded ? "Model is Loaded" : "Load Model"),
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.resolveWith<Color>(
+              (Set<MaterialState> states) {
+                return modelLoaded ? Colors.green : Colors.blue;
+              },
+            ),
+          ),
         ),
       ],
     );
+  }
+
+  bool isModelLoaded(ModelType selectedModel) {
+    return CustomModel().isModelLoaded(selectedModel);
   }
 
   // Combined Control Box for Recording and Model Selection

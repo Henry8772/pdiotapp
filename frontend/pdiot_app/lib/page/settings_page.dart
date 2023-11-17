@@ -133,7 +133,8 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
         onTap: () {
-          Get.to(() => LoginPage());
+          Get.to(() => LoginPage(fromSettings: true));
+          // Get.to(() => LoginPage());
         },
       ),
     );

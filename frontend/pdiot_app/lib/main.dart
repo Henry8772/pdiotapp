@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pdiot_app/page/activity_history_page.dart';
+import 'package:pdiot_app/page/login_page.dart';
 
 import 'package:pdiot_app/page/settings_page.dart';
 import 'package:pdiot_app/utils/database_utils.dart';
@@ -21,6 +22,17 @@ void main() {
   DatabaseHelper.initDatabase();
 }
 
+Future<void> checkIfUserLoggedInAndNavigate() async {
+  String username = await Pref.getUserName();
+  bool isLoggedIn = username != "NOT LOGIN-DEFAULT";
+  if (!isLoggedIn) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.offAll(
+          () => LoginPage()); // Replace LoginPage with your login page widget
+    });
+  }
+}
+
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -29,14 +41,14 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  var notifyHelper;
-
-  final _pageController = PageController(initialPage: 1); // Moved to here
-  var _currentIndex = 1;
+  final _pageController = PageController(initialPage: 2); // Moved to here
+  var _currentIndex = 2;
 
   @override
   void initState() {
     super.initState();
+
+    checkIfUserLoggedInAndNavigate();
     requestPermissions();
   }
 
@@ -63,8 +75,11 @@ class _MainPageState extends State<MainPage> {
 
   @override
   void dispose() {
-    notifyHelper.dispose();
-    _pageController.dispose(); // Dispose of the controller
+    if (_pageController.hasClients) {
+      _pageController.dispose();
+    }
+
+    // Dispose of the controller
     super.dispose();
   }
 
@@ -74,20 +89,11 @@ class _MainPageState extends State<MainPage> {
     SettingsPage(),
   ];
 
-  final pageTitles = ["History", "Home", "Settings"];
+  // final pageTitles = ["History", "Home", "Settings"];
 
   @override
   Widget build(BuildContext context) {
     return mainContent(context);
-  }
-
-  Future<bool> checkIfUserLoggedIn() async {
-    await CurrentUser.instance.loadUser();
-    if (CurrentUser.instance.username.value == 'NOT LOGIN-DEFAULT') {
-      return false;
-    } else {
-      return true;
-    }
   }
 
   Widget mainContent(BuildContext context) {
@@ -119,7 +125,7 @@ class _MainPageState extends State<MainPage> {
         unselectedLabelStyle: TextStyle(color: Color(0xff3E87F6), fontSize: 12),
         items: [
           BottomNavigationBarItem(
-              label: 'Test',
+              label: 'History',
               icon: Image.asset(
                   'assets/images/Test_${_currentIndex == 0 ? 1 : 0}.png',
                   width: 20)),

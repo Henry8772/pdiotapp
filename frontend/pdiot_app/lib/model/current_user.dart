@@ -21,21 +21,22 @@ class CurrentUser extends GetxController {
     id.value = await Pref.getUserId();
     username.value = await Pref.getUserName();
     bluetoothId = await Pref.getBluetoothID();
-    await loadUserFiles();
+    print(username.value);
+    // await loadUserFiles();
   }
 
-  Future<void> loadUserFiles() async {
-    List<String> allFiles = await Pref.getFileNames();
-    userFiles =
-        allFiles.where((file) => file.startsWith('${id.value}-')).toList();
-  }
+  // Future<void> loadUserFiles() async {
+  //   List<String> allFiles = await Pref.getFileNames();
+  //   userFiles =
+  //       allFiles.where((file) => file.startsWith('${id.value}-')).toList();
+  // }
 
   void setCurrentUser(String newId, String usernameParam) {
     id.value = newId;
     username.value = usernameParam;
     Pref.saveUserId(newId);
     Pref.saveUserName(usernameParam);
-    loadUserFiles();
+    // loadUserFiles();
   }
 
   Future<void> addFileName(String newFileName) async {
