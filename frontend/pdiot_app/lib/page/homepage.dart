@@ -260,21 +260,32 @@ class _HomePageState extends State<HomePage> {
         // Load button
         ElevatedButton(
           onPressed: () async {
-            if (!modelLoaded) {
+            if (!isModelLoaded(selectedModel)) {
               modelLoaded = await CustomModel().loadModel(selectedModel);
               if (modelLoaded) {
-                setState(() {}); // Trigger a rebuild to update the UI
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content:
-                        Text("Model ${modelToString(selectedModel)} is loaded"),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                setState(() {
+                  // Trigger a rebuild to update the UI
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          "Model ${modelToString(selectedModel)} is loaded"),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                });
               }
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                      "Model ${modelToString(selectedModel)} is already loaded"),
+                  backgroundColor: Colors.green,
+                ),
+              );
             }
           },
-          child: Text(modelLoaded ? "Model is Loaded" : "Load Model"),
+          child: Text("Load Model"),
+          // child: Text(modelLoaded ? "Model is Loaded" : "Load Model"),
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.resolveWith<Color>(
               (Set<MaterialState> states) {
@@ -297,6 +308,8 @@ class _HomePageState extends State<HomePage> {
       padding: EdgeInsets.all(10),
       child: Column(
         children: [
+          Text("Model ${modelToString(selectedModel)} is loaded"),
+          SizedBox(height: 10),
           modelSelectionAndLoad(),
           SizedBox(height: 10), // Spacing between buttons
 
