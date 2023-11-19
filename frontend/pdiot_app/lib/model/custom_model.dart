@@ -4,13 +4,13 @@ import 'dart:typed_data';
 import 'package:pdiot_app/utils/classification_utils.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
-enum ModelType { task1, task2, task3 }
+enum ModelType { task0, task1, task2, task3 }
 
 class CustomModel {
   static final CustomModel _singleton = CustomModel._internal();
 
   IsolateInterpreter? isolateInterpreter;
-  ModelType? _currentModelType;
+  ModelType _currentModelType = ModelType.task0;
 
   CustomModel._internal();
 
@@ -20,41 +20,29 @@ class CustomModel {
 
   final Map<ModelType, List<String>> labelLists = {
     ModelType.task1: physicalClasses,
-    ModelType.task2: [
-      'Miscellaneous movements',
-      'Lying down right',
-      'Descending stairs',
-      'Lying down back',
-      'Lying down on left',
-      'Lying down on stomach',
-      'Shuffle walking',
-      'Lying down right',
-      'Lying down back',
-      'Sitting',
-      'Standing',
-      'Lying down on stomach'
-
-      // Labels specific to Model B
-    ],
-    ModelType.task3: [
-      // Labels specific to Model C
-    ],
+    ModelType.task2: combinedClasses,
+    ModelType.task3: respiratoryClasses,
   };
 
+  ModelType getCurrentModel() {
+    return _currentModelType;
+  }
+
   // Function to check if a model is loaded
+
   bool isModelLoaded(ModelType selectedModel) {
     return isolateInterpreter != null && _currentModelType == selectedModel;
   }
 
   // Helper method to get the output shape based on model type
-  List<int> getOutputShape(ModelType? modelType) {
+  getOutputList(ModelType? modelType) {
     switch (modelType) {
       case ModelType.task1:
-        return [1, 11]; // Example shape for model A
+        return List.filled(1 * 11, 0).reshape([1, 11]);
       case ModelType.task2:
-        return [1, 12]; // Example shape for model B
+        return List.filled(1 * 20, 0).reshape([1, 20]);
       case ModelType.task3:
-        return [1, 16]; // Example shape for model C
+        return List.filled(1 * 4, 0).reshape([1, 4]);
       default:
         return [1, 11]; // Default shape
     }
@@ -74,10 +62,14 @@ class CustomModel {
           modelPath = 'assets/models/model_online_task_1.tflite';
           break;
         case ModelType.task2:
-          modelPath = 'assets/models/model_cnn.tflite';
+          // modelPath = 'assets/models/model_task23.tflite';
+          modelPath = 'assets/models/model_online_3CNN_20.tflite';
           break;
         case ModelType.task3:
-          modelPath = 'assets/models/model_cnn.tflite';
+          modelPath = 'assets/models/model_4_class_v1.tflite';
+          break;
+        case ModelType.task0:
+          modelPath = 'assets/models/model_online_task_1.tflite';
           break;
       }
 
@@ -96,21 +88,50 @@ class CustomModel {
   }
 
   // Updated perform inference method
-  Future<String> performInference(List<Float32List> inputData) async {
+  Future<String> performInference(List<Float32List> inputAccData,
+      List<Float32List> inputAllData, List<Float32List> inputGyroData) async {
     if (isolateInterpreter == null) {
       print('Model not loaded yet');
       return 'Error: Model not loaded';
     }
 
-    List<List<Float32List>> finalInputData = [inputData];
-    var outputShape = getOutputShape(_currentModelType);
-    var output = List.filled(outputShape.reduce((a, b) => a * b), 0)
-        .reshape(outputShape);
+    List<List<Float32List>> finalInputData = [];
+
+    // print(_currentModelType);
+
+    if (_currentModelType == ModelType.task1) {
+      finalInputData = [inputAccData];
+    } else if (_currentModelType == ModelType.task3) {
+      finalInputData = [inputGyroData];
+    } else {
+      finalInputData = [inputAllData];
+    }
+
+    // print(finalInputData.length);
+    // print(finalInputData[0].length);
+    // print(finalInputData.shape);
+
+    // print(outputShape);
+
+    var output = getOutputList(_currentModelType);
+
+    // if (_currentModelType == ModelType.task1) {
+    //   output = List.filled(outputShape.reduce((a, b) => a * b), 0)
+    //       .reshape(outputShape);
+    // } else if (_currentModelType == ModelType.task2) {
+    //   output = List.filled(1 * 20, 0).reshape([1, 20]);
+    // } else {
+    //   output = List.filled(1 * 26, 0).reshape([1, 26]);
+    // }
 
     await isolateInterpreter!.run(finalInputData, output);
+    // print(output);
 
-    List<double> data = output.flatten();
+    List<double> data = output[0];
+    // print(data);
     int argMaxIndex = data.indexWhere((element) => element == data.reduce(max));
+
+    print(argMaxIndex);
     if (argMaxIndex == -1) {
       return 'Miscellaneous movements';
     } else {

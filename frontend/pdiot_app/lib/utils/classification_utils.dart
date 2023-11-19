@@ -25,6 +25,35 @@ List<String> physicalClasses = [
   'Sitting/standing',
 ];
 
+List<String> allClasses = [
+  'Ascending stairs',
+  'Descending stairs',
+  'Lying down on back_Breathing Normal',
+  'Lying down on back_Coughing',
+  'Lying down on back_Hyperventilating',
+  'Lying down on back_Other',
+  'Lying down on left_Breathing Normal',
+  'Lying down on left_Coughing',
+  'Lying down on left_Hyperventilating',
+  'Lying down on left_Other',
+  'Lying down on right_Breathing Normal',
+  'Lying down on right_Coughing',
+  'Lying down on right_Hyperventilating',
+  'Lying down on right_Other',
+  'Lying down on stomach_Breathing Normal',
+  'Lying down on stomach_Coughing',
+  'Lying down on stomach_Hyperventilating',
+  'Lying down on stomach_Other',
+  'Miscellaneous movements',
+  'Normal walking',
+  'Running',
+  'Shuffle walking',
+  'Sitting/standing_Breathing Normal',
+  'Sitting/standing_Coughing',
+  'Sitting/standing_Hyperventilating',
+  'Sitting/standing_Other'
+];
+
 List<Activity> activities = [
   Activity(
       name: 'Ascending stairs',
@@ -53,18 +82,25 @@ List<Activity> activities = [
 ];
 
 Color getActivityColor(String activityName) {
+  String processedActivityName =
+      activityName.contains('_') ? activityName.split('_')[0] : activityName;
+
   return activities
-      .firstWhere((activity) => activity.name == activityName,
+      .firstWhere((activity) => activity.name == processedActivityName,
           orElse: () => Activity(
               name: '', color: Colors.blue, icon: Icons.hourglass_empty))
       .color;
 }
 
 Widget getActivityIcon(String activityName) {
+  String processedActivityName =
+      activityName.contains('_') ? activityName.split('_')[0] : activityName;
+
   var activity = activities.firstWhere(
-      (activity) => activity.name == activityName,
+      (activity) => activity.name == processedActivityName,
       orElse: () =>
           Activity(name: '', color: Colors.blue, icon: Icons.hourglass_empty));
+
   return Icon(activity.icon, size: 30, color: activity.color);
 }
 
@@ -136,31 +172,31 @@ Widget getActivityIcon(String activityName) {
 // }
 
 List<String> combinedClasses = [
+  'Lying down on back_Breathing Normal', //0
+  'Lying down on back_Coughing', //1
+  'Lying down on back_Hyperventilating', //2
+  'Lying down on back_Other', //3
+  'Lying down on left_Breathing Normal', //4
+  'Lying down on left_Coughing', //5
+  'Lying down on left_Hyperventilating', //6
+  'Lying down on left_Other', //7
+  'Lying down on right_Breathing Normal', //8
   'Lying down on right_Coughing',
-  'Lying down on stomach_Hyperventilating',
-  'Lying down on back_Breathing Normal',
-  'Lying down on back_Hyperventilating',
-  'Lying down on stomach_Breathing Normal',
-  'Lying down on left_Breathing Normal',
   'Lying down on right_Hyperventilating',
-  'Lying down on left_Other',
-  'Lying down on back_Coughing',
-  'Sitting/standing_Breathing Normal',
-  'Sitting/standing_Other',
-  'Lying down on left_Coughing',
-  'Lying down on right_Breathing Normal',
-  'Lying down on stomach_Other',
   'Lying down on right_Other',
+  'Lying down on stomach_Breathing Normal',
+  'Lying down on stomach_Coughing',
+  'Lying down on stomach_Hyperventilating',
+  'Lying down on stomach_Other',
+  'Sitting/standing_Breathing Normal',
   'Sitting/standing_Coughing',
-  'Lying down on back_Other',
-  'Lying down on left_Hyperventilating',
   'Sitting/standing_Hyperventilating',
-  'Lying down on stomach_Coughing'
+  'Sitting/standing_Other'
 ];
 
 List<String> respiratoryClasses = [
+  'Breathing Normal',
   'Coughing',
   'Hyperventilating',
   'Other',
-  'Breathing Normal'
 ];

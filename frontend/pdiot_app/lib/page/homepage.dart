@@ -10,7 +10,6 @@ import 'package:pdiot_app/utils/database_utils.dart';
 import '../utils/ui_utils.dart';
 
 import 'package:flutter/material.dart';
-import 'package:pdiot_app/page/homepage_controller.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -24,10 +23,12 @@ class _HomePageState extends State<HomePage> {
   List<Float32List> acc = [];
   bool isRecording = false;
   List<Float32List> gyro = [];
+  List<Float32List> accAndGyro = [];
 
   @override
   void initState() {
     super.initState();
+    selectedModel = CustomModel().getCurrentModel();
     modelLoaded = isModelLoaded(selectedModel);
   }
 
@@ -79,18 +80,31 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         chartAccData
             .add(SensorData(counter, data['accX'], data['accY'], data['accZ']));
-        chartAccData.add(
+        chartGyroData.add(
             SensorData(counter, data['gyroX'], data['gyroY'], data['gyroZ']));
       });
       counter += 1;
 
       acc.add(Float32List.fromList([data['accX'], data['accY'], data['accZ']]));
+
+      accAndGyro.add(Float32List.fromList([
+        data['accX'],
+        data['accY'],
+        data['accZ'],
+        data['gyroX'],
+        data['gyroY'],
+        data['gyroZ']
+      ]));
       gyro.add(
           Float32List.fromList([data['gyroX'], data['gyroY'], data['gyroZ']]));
 
       if (acc.length % 25 == 0 && acc.length >= 50) {
         List<Float32List> last2SecData = acc.sublist(acc.length - 50);
-        String result = await CustomModel().performInference(last2SecData);
+        List<Float32List> last2SecAllData =
+            accAndGyro.sublist(accAndGyro.length - 50);
+        List<Float32List> last2SecGyroData = gyro.sublist(gyro.length - 50);
+        String result = await CustomModel()
+            .performInference(last2SecData, last2SecAllData, last2SecGyroData);
         setState(() {
           currentActivity = result; // Update current activity
         });
@@ -107,9 +121,9 @@ class _HomePageState extends State<HomePage> {
   String modelToString(ModelType model) {
     switch (model) {
       case ModelType.task1:
-        return 'Task 1';
+        return 'Physical';
       case ModelType.task2:
-        return 'Task 2';
+        return 'Respiratory';
       case ModelType.task3:
         return 'Task 3';
       default:
@@ -193,7 +207,7 @@ class _HomePageState extends State<HomePage> {
               child: GestureDetector(
                 onTap: () {
                   setState(() {
-                    isRecording ? stopRecording() : checkBeforeStartRecording();
+                    isRecording ? stopRecording() : startRecording();
                   });
                 },
                 child: _buildControlBox(),

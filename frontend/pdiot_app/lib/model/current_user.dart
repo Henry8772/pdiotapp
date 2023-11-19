@@ -21,7 +21,7 @@ class CurrentUser extends GetxController {
     id.value = await Pref.getUserId();
     username.value = await Pref.getUserName();
     bluetoothId = await Pref.getBluetoothID();
-    print(username.value);
+
     // await loadUserFiles();
   }
 

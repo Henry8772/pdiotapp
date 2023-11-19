@@ -41,6 +41,10 @@ class DatabaseHelper {
     for (String activity in activities) {
       await db.insert('activities', {'name': activity});
     }
+
+    for (String activity in combinedClasses) {
+      await db.insert('activities', {'name': activity});
+    }
   }
 
   // Insert a user

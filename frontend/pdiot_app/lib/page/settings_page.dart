@@ -20,8 +20,20 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     // Initialize the TextEditingController with an initial value
-    _bluetoothDeviceIdController =
-        TextEditingController(text: CurrentUser.instance.bluetoothId);
+    loadData();
+  }
+
+  void loadData() async {
+    // var bluetoothId = await Pref.getBluetoothID();
+    // print(bluetoothId);
+    // CurrentUser.instance.loadUser();
+    // print(CurrentUser.instance.bluetoothId);
+    await CurrentUser.instance.loadUser();
+    _isBluetoothConnected = BluetoothConnect().isBluetoothConnected();
+    setState(() {
+      _bluetoothDeviceIdController =
+          TextEditingController(text: CurrentUser.instance.bluetoothId);
+    });
   }
 
   @override
@@ -64,6 +76,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void connectBluetooth(String deviceId) async {
+    print(deviceId);
     Pref.saveBluetoothId(deviceId);
     setState(() {
       _isConnecting = true;
