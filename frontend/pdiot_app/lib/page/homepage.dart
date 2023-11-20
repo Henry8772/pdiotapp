@@ -38,7 +38,8 @@ class _HomePageState extends State<HomePage> {
   Map<String, int> currentSessionActivities = {};
   DateTime startTime = DateTime.now();
   int counter = 0;
-  ModelType selectedModel = ModelType.task1; // Default selected value
+  ModelType selectedModel = ModelType.task1;
+  ModelType loadedModel = ModelType.task0; // Default selected value
   List<ModelType> models = ModelType.values;
   String currentActivity = "None";
   bool modelLoaded = false;
@@ -201,7 +202,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               )),
           Positioned(
-              bottom: 50,
+              bottom: 30,
               left: 16,
               right: 16,
               child: GestureDetector(
@@ -211,7 +212,7 @@ class _HomePageState extends State<HomePage> {
                   });
                 },
                 child: _buildControlBox(),
-              )),
+              ))
         ],
       ),
     );
@@ -264,6 +265,7 @@ class _HomePageState extends State<HomePage> {
               modelLoaded = await CustomModel().loadModel(selectedModel);
               if (modelLoaded) {
                 setState(() {
+                  loadedModel = selectedModel;
                   // Trigger a rebuild to update the UI
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -289,7 +291,8 @@ class _HomePageState extends State<HomePage> {
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.resolveWith<Color>(
               (Set<MaterialState> states) {
-                return modelLoaded ? Colors.green : Colors.blue;
+                return Colors.blue;
+                // return modelLoaded ? Colors.green : Colors.blue;
               },
             ),
           ),
@@ -308,7 +311,11 @@ class _HomePageState extends State<HomePage> {
       padding: EdgeInsets.all(10),
       child: Column(
         children: [
-          Text("Model ${modelToString(selectedModel)} is loaded"),
+          Text(
+            loadedModel == ModelType.task0
+                ? 'No model is loaded'
+                : 'Model ${modelToString(loadedModel)} is loaded',
+          ),
           SizedBox(height: 10),
           modelSelectionAndLoad(),
           SizedBox(height: 10), // Spacing between buttons
