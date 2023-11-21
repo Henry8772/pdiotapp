@@ -101,11 +101,11 @@ class _HomePageState extends State<HomePage> {
 
       if (acc.length % 25 == 0 && acc.length >= 50) {
         List<Float32List> last2SecData = acc.sublist(acc.length - 50);
-        // List<Float32List> last2SecAllData =
-        //     accAndGyro.sublist(accAndGyro.length - 50);
+        List<Float32List> last2SecAllData =
+            accAndGyro.sublist(accAndGyro.length - 50);
         List<Float32List> last2SecGyroData = gyro.sublist(gyro.length - 50);
         Map<ModelType, String> result = await CustomModel()
-            .performInference(last2SecData, last2SecGyroData);
+            .performInference(last2SecData, last2SecGyroData, last2SecAllData);
         // String result = await CustomModel()
         //     .performInference(last2SecData, last2SecAllData, last2SecGyroData);
         String resultString = processModelResult(result);

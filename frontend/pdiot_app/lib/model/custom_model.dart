@@ -58,7 +58,9 @@ class CustomModel {
 
   Future<bool> loadModel() async {
     String physicalModelPath = 'assets/models/model_online_task_1.tflite';
-    String respiratoryModelPath = 'assets/models/model_4_class_v1.tflite';
+    String respiratoryModelPath =
+        'assets/models/model_online_4CNN_3dense_4class_79.tflite';
+    // String respiratoryModelPath = 'assets/models/model_4_class_v1.tflite';
 
     try {
       // Load the physical model
@@ -121,7 +123,9 @@ class CustomModel {
   // }
 
   Future<Map<ModelType, String>> performInference(
-      List<Float32List> inputAccData, List<Float32List> inputGyroData) async {
+      List<Float32List> inputAccData,
+      List<Float32List> inputGyroData,
+      List<Float32List> inputAllData) async {
     Map<ModelType, String> results = {};
 
     if (isolateInterpreterPhysical != null) {
@@ -132,7 +136,7 @@ class CustomModel {
 
     if (isolateInterpreterRespiratory != null) {
       var resultTask3 = await _performInferenceOnModel(
-          ModelType.respiratory, isolateInterpreterRespiratory!, inputGyroData);
+          ModelType.respiratory, isolateInterpreterRespiratory!, inputAllData);
       results[ModelType.respiratory] = resultTask3;
     }
 
