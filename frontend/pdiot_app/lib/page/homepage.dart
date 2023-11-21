@@ -126,8 +126,10 @@ class _HomePageState extends State<HomePage> {
   String processModelResult(Map<ModelType, String> result) {
     String physicalAct = result[ModelType.physical] ?? '';
     String respiratoryAct = result[ModelType.respiratory] ?? '';
-
-    if (physicalClassesWithRespiratory.contains(physicalAct)) {
+    List<String> respAct = ['Hyperventilating', 'Coughing'];
+    if (respAct.contains(respiratoryAct)) {
+      return "$physicalAct - $respiratoryAct";
+    } else if (physicalClassesWithRespiratory.contains(physicalAct)) {
       return "$physicalAct - $respiratoryAct";
     } else {
       return physicalAct;
