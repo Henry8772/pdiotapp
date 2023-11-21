@@ -46,7 +46,7 @@ class CustomModel {
   getOutputList(ModelType? modelType) {
     switch (modelType) {
       case ModelType.physical:
-        return List.filled(1 * 11, 0).reshape([1, 11]);
+        return List.filled(1 * 5, 0).reshape([1, 5]);
       case ModelType.task2:
         return List.filled(1 * 20, 0).reshape([1, 20]);
       case ModelType.respiratory:
@@ -57,7 +57,9 @@ class CustomModel {
   }
 
   Future<bool> loadModel() async {
-    String physicalModelPath = 'assets/models/model_online_task_1.tflite';
+    // String physicalModelPath = 'assets/models/model_online_task_1.tflite';
+    String physicalModelPath =
+        'assets/models/model_online_task_1_5_class.tflite';
     String respiratoryModelPath =
         'assets/models/model_online_4CNN_3dense_4class_79_v2.tflite';
     // String respiratoryModelPath = 'assets/models/model_4_class_v1.tflite';

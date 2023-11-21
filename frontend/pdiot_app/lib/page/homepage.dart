@@ -24,6 +24,7 @@ class _HomePageState extends State<HomePage> {
   bool isRecording = false;
   List<Float32List> gyro = [];
   List<Float32List> accAndGyro = [];
+  String selectedValue = 'Task 1';
 
   @override
   void initState() {
@@ -127,9 +128,7 @@ class _HomePageState extends State<HomePage> {
     String physicalAct = result[ModelType.physical] ?? '';
     String respiratoryAct = result[ModelType.respiratory] ?? '';
     List<String> respAct = ['Hyperventilating', 'Coughing'];
-    if (respAct.contains(respiratoryAct)) {
-      return "$physicalAct - $respiratoryAct";
-    } else if (physicalClassesWithRespiratory.contains(physicalAct)) {
+    if (physicalClassesWithRespiratory.contains(physicalAct)) {
       return "$physicalAct - $respiratoryAct";
     } else {
       return physicalAct;
@@ -259,7 +258,22 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Dropdown for model selection
-
+        DropdownButton<String>(
+            value: selectedValue, // Use the state variable here
+            onChanged: (String? newValue) {
+              setState(() {
+                if (newValue != null) {
+                  selectedValue = newValue; // Update the state variable
+                }
+              });
+            },
+            items: <String>['Task 1', 'Task 2&3']
+                .map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList()),
         SizedBox(width: 10), // Space between dropdown and button
 
         // Load button
