@@ -36,13 +36,13 @@ class DatabaseHelper {
 
   static Future<void> _populateActivities(Database db) async {
     // List of activities to be added
-    List<String> activities = physicalClasses;
+    // List<String> activities = physicalClasses;
 
-    for (String activity in activities) {
-      await db.insert('activities', {'name': activity});
-    }
+    // for (String activity in activities) {
+    //   await db.insert('activities', {'name': activity});
+    // }
 
-    for (String activity in combinedClasses) {
+    for (String activity in allClasses) {
       await db.insert('activities', {'name': activity});
     }
   }

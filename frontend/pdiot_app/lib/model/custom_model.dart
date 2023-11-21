@@ -4,13 +4,17 @@ import 'dart:typed_data';
 import 'package:pdiot_app/utils/classification_utils.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
-enum ModelType { task0, task1, task2, task3 }
+enum ModelType { task0, physical, task2, respiratory }
 
 class CustomModel {
   static final CustomModel _singleton = CustomModel._internal();
 
   IsolateInterpreter? isolateInterpreter;
   ModelType _currentModelType = ModelType.task0;
+  IsolateInterpreter? isolateInterpreterPhysical;
+  IsolateInterpreter? isolateInterpreterRespiratory;
+
+  bool modelLoaded = false;
 
   CustomModel._internal();
 
@@ -19,9 +23,9 @@ class CustomModel {
   }
 
   final Map<ModelType, List<String>> labelLists = {
-    ModelType.task1: physicalClasses,
+    ModelType.physical: physicalClasses,
     ModelType.task2: combinedClasses,
-    ModelType.task3: respiratoryClasses,
+    ModelType.respiratory: respiratoryClasses,
   };
 
   ModelType getCurrentModel() {
@@ -30,120 +34,180 @@ class CustomModel {
 
   // Function to check if a model is loaded
 
-  bool isModelLoaded(ModelType selectedModel) {
-    return isolateInterpreter != null && _currentModelType == selectedModel;
+  bool isModelLoaded() {
+    return modelLoaded;
   }
+
+  // bool isModelLoaded(ModelType selectedModel) {
+  //   return isolateInterpreter != null && _currentModelType == selectedModel;
+  // }
 
   // Helper method to get the output shape based on model type
   getOutputList(ModelType? modelType) {
     switch (modelType) {
-      case ModelType.task1:
+      case ModelType.physical:
         return List.filled(1 * 11, 0).reshape([1, 11]);
       case ModelType.task2:
         return List.filled(1 * 20, 0).reshape([1, 20]);
-      case ModelType.task3:
+      case ModelType.respiratory:
         return List.filled(1 * 4, 0).reshape([1, 4]);
       default:
         return [1, 11]; // Default shape
     }
   }
 
-  // Updated load model method
-  Future<bool> loadModel(ModelType modelType) async {
-    if (_currentModelType != modelType) {
-      // Dispose of the existing model if a different type is requested
-      isolateInterpreter?.close();
-      isolateInterpreter = null;
-      _currentModelType = modelType;
+  Future<bool> loadModel() async {
+    String physicalModelPath = 'assets/models/model_online_task_1.tflite';
+    String respiratoryModelPath = 'assets/models/model_4_class_v1.tflite';
 
-      String modelPath;
-      switch (modelType) {
-        case ModelType.task1:
-          modelPath = 'assets/models/model_online_task_1.tflite';
-          break;
-        case ModelType.task2:
-          // modelPath = 'assets/models/model_task23.tflite';
-          modelPath = 'assets/models/model_online_3CNN_20.tflite';
-          break;
-        case ModelType.task3:
-          modelPath = 'assets/models/model_4_class_v1.tflite';
-          break;
-        case ModelType.task0:
-          modelPath = 'assets/models/model_online_task_1.tflite';
-          break;
-      }
+    try {
+      // Load the physical model
+      final physicalInterpreter =
+          await Interpreter.fromAsset(physicalModelPath);
+      isolateInterpreterPhysical =
+          await IsolateInterpreter.create(address: physicalInterpreter.address);
+      print('Physical model loaded successfully in isolate');
 
-      try {
-        final interpreter = await Interpreter.fromAsset(modelPath);
-        isolateInterpreter =
-            await IsolateInterpreter.create(address: interpreter.address);
-        print('Model $modelType loaded successfully in isolate');
-        return true;
-      } catch (e) {
-        print('Failed to load the model in isolate: $e');
-        return false;
-      }
+      // Load the respiratory model
+      final respiratoryInterpreter =
+          await Interpreter.fromAsset(respiratoryModelPath);
+      isolateInterpreterRespiratory = await IsolateInterpreter.create(
+          address: respiratoryInterpreter.address);
+      print('Respiratory model loaded successfully in isolate');
+      modelLoaded = true;
+
+      return true;
+    } catch (e) {
+      print('Failed to load models in isolate: $e');
+      return false;
     }
-    return false;
+  }
+
+  // Updated load model method
+  // Future<bool> loadModel(ModelType modelType) async {
+  //   String modelPath;
+
+  //   switch (modelType) {
+  //     case ModelType.physical:
+  //       modelPath = 'assets/models/model_online_task_1.tflite';
+  //       isolateInterpreterPhysical?.close();
+  //       isolateInterpreterPhysical = null;
+  //       break;
+  //     case ModelType.respiratory:
+  //       modelPath = 'assets/models/model_4_class_v1.tflite';
+  //       isolateInterpreterRespiratory?.close();
+  //       isolateInterpreterRespiratory = null;
+  //       break;
+  //     default:
+  //       print('Model type not supported for isolated interpreter');
+  //       return false;
+  //   }
+
+  //   try {
+  //     final interpreter = await Interpreter.fromAsset(modelPath);
+  //     var isolateInterpreter =
+  //         await IsolateInterpreter.create(address: interpreter.address);
+  //     if (modelType == ModelType.physical) {
+  //       isolateInterpreterPhysical = isolateInterpreter;
+  //     } else if (modelType == ModelType.respiratory) {
+  //       isolateInterpreterRespiratory = isolateInterpreter;
+  //     }
+  //     print('Model $modelType loaded successfully in isolate');
+  //     return true;
+  //   } catch (e) {
+  //     print('Failed to load the model in isolate: $e');
+  //     return false;
+  //   }
+  // }
+
+  Future<Map<ModelType, String>> performInference(
+      List<Float32List> inputAccData, List<Float32List> inputGyroData) async {
+    Map<ModelType, String> results = {};
+
+    if (isolateInterpreterPhysical != null) {
+      var resultTask1 = await _performInferenceOnModel(
+          ModelType.physical, isolateInterpreterPhysical!, inputAccData);
+      results[ModelType.physical] = resultTask1;
+    }
+
+    if (isolateInterpreterRespiratory != null) {
+      var resultTask3 = await _performInferenceOnModel(
+          ModelType.respiratory, isolateInterpreterRespiratory!, inputGyroData);
+      results[ModelType.respiratory] = resultTask3;
+    }
+
+    print(results);
+
+    return results;
+  }
+
+  Future<String> _performInferenceOnModel(ModelType modelType,
+      IsolateInterpreter interpreter, List<Float32List> inputData) async {
+    var output = getOutputList(modelType);
+
+    await interpreter.run([inputData], output);
+
+    List<double> data = output[0];
+    int argMaxIndex = data.indexWhere((element) => element == data.reduce(max));
+
+    if (argMaxIndex == -1) {
+      return getDefaultReturnValue(modelType);
+    } else {
+      var currentLabelList = labelLists[modelType] ?? [];
+      return currentLabelList.isNotEmpty
+          ? currentLabelList[argMaxIndex]
+          : getDefaultReturnValue(modelType);
+    }
+  }
+
+  String getDefaultReturnValue(ModelType modelType) {
+    switch (modelType) {
+      case ModelType.physical:
+        return 'Miscellaneous movements';
+      case ModelType.respiratory:
+        return 'Other';
+      default:
+        return 'Miscellaneous movements'; // Default for other model types
+    }
   }
 
   // Updated perform inference method
-  Future<String> performInference(List<Float32List> inputAccData,
-      List<Float32List> inputAllData, List<Float32List> inputGyroData) async {
-    if (isolateInterpreter == null) {
-      print('Model not loaded yet');
-      return 'Error: Model not loaded';
-    }
+  // Future<String> performInference(List<Float32List> inputAccData,
+  //     List<Float32List> inputAllData, List<Float32List> inputGyroData) async {
+  //   if (isolateInterpreter == null) {
+  //     print('Model not loaded yet');
+  //     return 'Error: Model not loaded';
+  //   }
 
-    List<List<Float32List>> finalInputData = [];
+  //   List<List<Float32List>> finalInputData = [];
 
-    // print(_currentModelType);
+  //   // print(_currentModelType);
 
-    if (_currentModelType == ModelType.task1) {
-      finalInputData = [inputAccData];
-    } else if (_currentModelType == ModelType.task3) {
-      finalInputData = [inputGyroData];
-    } else {
-      finalInputData = [inputAllData];
-    }
+  //   if (_currentModelType == ModelType.task1) {
+  //     finalInputData = [inputAccData];
+  //   } else if (_currentModelType == ModelType.task3) {
+  //     finalInputData = [inputGyroData];
+  //   } else {
+  //     finalInputData = [inputAllData];
+  //   }
 
-    // print(finalInputData.length);
-    // print(finalInputData[0].length);
-    // print(finalInputData.shape);
+  //   List<double> data = output[0];
+  //   // print(data);
+  //   int argMaxIndex = data.indexWhere((element) => element == data.reduce(max));
 
-    // print(outputShape);
+  //   print(argMaxIndex);
+  //   if (argMaxIndex == -1) {
+  //     return 'Miscellaneous movements';
+  //   } else {
+  //     var currentLabelList = labelLists[_currentModelType] ?? [];
 
-    var output = getOutputList(_currentModelType);
+  //     return currentLabelList.isNotEmpty
+  //         ? currentLabelList[argMaxIndex]
+  //         : 'Miscellaneous movements';
+  //   }
 
-    // if (_currentModelType == ModelType.task1) {
-    //   output = List.filled(outputShape.reduce((a, b) => a * b), 0)
-    //       .reshape(outputShape);
-    // } else if (_currentModelType == ModelType.task2) {
-    //   output = List.filled(1 * 20, 0).reshape([1, 20]);
-    // } else {
-    //   output = List.filled(1 * 26, 0).reshape([1, 26]);
-    // }
-
-    await isolateInterpreter!.run(finalInputData, output);
-    // print(output);
-
-    List<double> data = output[0];
-    // print(data);
-    int argMaxIndex = data.indexWhere((element) => element == data.reduce(max));
-
-    print(argMaxIndex);
-    if (argMaxIndex == -1) {
-      return 'Miscellaneous movements';
-    } else {
-      var currentLabelList = labelLists[_currentModelType] ?? [];
-
-      return currentLabelList.isNotEmpty
-          ? currentLabelList[argMaxIndex]
-          : 'Miscellaneous movements';
-    }
-
-    // Retrieve the label list for the current model
-  }
+  //   // Retrieve the label list for the current model
+  // }
 }
 
 // Extension method to flatten a list of lists

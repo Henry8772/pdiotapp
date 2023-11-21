@@ -1,9 +1,6 @@
-import 'dart:async';
-import 'dart:math';
-
 import 'package:get/get.dart';
-import 'package:pdiot_app/model/current_user.dart';
-import 'package:pdiot_app/utils/database_utils.dart';
+// import 'package:pdiot_app/model/current_user.dart';
+// import 'package:pdiot_app/utils/database_utils.dart';
 import '../model/custom_model.dart';
 
 class HomePageController extends GetxController {
@@ -26,8 +23,4 @@ class HomePageController extends GetxController {
   //       random.nextInt(activities.length); // Generates a random index
   //   return activities[randomIndex]; // Returns the activity at the random index
   // }
-
-  Future<void> load() async {
-    CustomModel().loadModel(ModelType.task1);
-  }
 }

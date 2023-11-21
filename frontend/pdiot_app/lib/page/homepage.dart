@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     selectedModel = CustomModel().getCurrentModel();
-    modelLoaded = isModelLoaded(selectedModel);
+    modelLoaded = isModelLoaded();
   }
 
   List<SensorData> chartAccData = [];
@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
   Map<String, int> currentSessionActivities = {};
   DateTime startTime = DateTime.now();
   int counter = 0;
-  ModelType selectedModel = ModelType.task1;
+  ModelType selectedModel = ModelType.physical;
   ModelType loadedModel = ModelType.task0; // Default selected value
   List<ModelType> models = ModelType.values;
   String currentActivity = "None";
@@ -101,31 +101,45 @@ class _HomePageState extends State<HomePage> {
 
       if (acc.length % 25 == 0 && acc.length >= 50) {
         List<Float32List> last2SecData = acc.sublist(acc.length - 50);
-        List<Float32List> last2SecAllData =
-            accAndGyro.sublist(accAndGyro.length - 50);
+        // List<Float32List> last2SecAllData =
+        //     accAndGyro.sublist(accAndGyro.length - 50);
         List<Float32List> last2SecGyroData = gyro.sublist(gyro.length - 50);
-        String result = await CustomModel()
-            .performInference(last2SecData, last2SecAllData, last2SecGyroData);
+        Map<ModelType, String> result = await CustomModel()
+            .performInference(last2SecData, last2SecGyroData);
+        // String result = await CustomModel()
+        //     .performInference(last2SecData, last2SecAllData, last2SecGyroData);
+        String resultString = processModelResult(result);
         setState(() {
-          currentActivity = result; // Update current activity
+          currentActivity = resultString;
         });
-        if (currentSessionActivities[result] == null) {
-          currentSessionActivities[result] = 1;
+        if (currentSessionActivities[resultString] == null) {
+          currentSessionActivities[resultString] = 1;
         } else {
-          currentSessionActivities[result] =
-              currentSessionActivities[result]! + 1;
+          currentSessionActivities[resultString] =
+              currentSessionActivities[resultString]! + 1;
         }
       }
     });
   }
 
+  String processModelResult(Map<ModelType, String> result) {
+    String physicalAct = result[ModelType.physical] ?? '';
+    String respiratoryAct = result[ModelType.respiratory] ?? '';
+
+    if (physicalClassesWithRespiratory.contains(physicalAct)) {
+      return "$physicalAct - $respiratoryAct";
+    } else {
+      return physicalAct;
+    }
+  }
+
   String modelToString(ModelType model) {
     switch (model) {
-      case ModelType.task1:
+      case ModelType.physical:
         return 'Physical';
       case ModelType.task2:
         return 'Respiratory';
-      case ModelType.task3:
+      case ModelType.respiratory:
         return 'Task 3';
       default:
         return '';
@@ -202,7 +216,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               )),
           Positioned(
-              bottom: 30,
+              bottom: 20,
               left: 16,
               right: 16,
               child: GestureDetector(
@@ -242,27 +256,14 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Dropdown for model selection
-        DropdownButton<ModelType>(
-          value: selectedModel,
-          onChanged: (ModelType? newValue) {
-            selectedModel = newValue!;
-            setState(() {});
-          },
-          items: models.map<DropdownMenuItem<ModelType>>((ModelType model) {
-            return DropdownMenuItem<ModelType>(
-              value: model,
-              child: Text(modelToString(model)),
-            );
-          }).toList(),
-        ),
 
         SizedBox(width: 10), // Space between dropdown and button
 
         // Load button
         ElevatedButton(
           onPressed: () async {
-            if (!isModelLoaded(selectedModel)) {
-              modelLoaded = await CustomModel().loadModel(selectedModel);
+            if (!isModelLoaded()) {
+              modelLoaded = await CustomModel().loadModel();
               if (modelLoaded) {
                 setState(() {
                   loadedModel = selectedModel;
@@ -286,13 +287,13 @@ class _HomePageState extends State<HomePage> {
               );
             }
           },
-          child: Text("Load Model"),
-          // child: Text(modelLoaded ? "Model is Loaded" : "Load Model"),
+          // child: Text("Load Model"),
+          child: Text(modelLoaded ? "Model is Loaded" : "Load Model"),
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.resolveWith<Color>(
               (Set<MaterialState> states) {
-                return Colors.blue;
-                // return modelLoaded ? Colors.green : Colors.blue;
+                // return Colors.blue;
+                return modelLoaded ? Colors.green : Colors.blue;
               },
             ),
           ),
@@ -301,8 +302,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  bool isModelLoaded(ModelType selectedModel) {
-    return CustomModel().isModelLoaded(selectedModel);
+  bool isModelLoaded() {
+    return CustomModel().isModelLoaded();
   }
 
   // Combined Control Box for Recording and Model Selection
@@ -311,11 +312,11 @@ class _HomePageState extends State<HomePage> {
       padding: EdgeInsets.all(10),
       child: Column(
         children: [
-          Text(
-            loadedModel == ModelType.task0
-                ? 'No model is loaded'
-                : 'Model ${modelToString(loadedModel)} is loaded',
-          ),
+          // Text(
+          //   loadedModel == ModelType.task0
+          //       ? 'No model is loaded'
+          //       : 'Model ${modelToString(loadedModel)} is loaded',
+          // ),
           SizedBox(height: 10),
           modelSelectionAndLoad(),
           SizedBox(height: 10), // Spacing between buttons

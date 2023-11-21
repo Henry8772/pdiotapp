@@ -25,33 +25,41 @@ List<String> physicalClasses = [
   'Sitting/standing',
 ];
 
+List<String> physicalClassesWithRespiratory = [
+  'Lying down on back',
+  'Lying down on left',
+  'Lying down on right',
+  'Lying down on stomach',
+  'Sitting/standing',
+];
+
 List<String> allClasses = [
   'Ascending stairs',
   'Descending stairs',
-  'Lying down on back_Breathing Normal',
-  'Lying down on back_Coughing',
-  'Lying down on back_Hyperventilating',
-  'Lying down on back_Other',
-  'Lying down on left_Breathing Normal',
-  'Lying down on left_Coughing',
-  'Lying down on left_Hyperventilating',
-  'Lying down on left_Other',
-  'Lying down on right_Breathing Normal',
-  'Lying down on right_Coughing',
-  'Lying down on right_Hyperventilating',
-  'Lying down on right_Other',
-  'Lying down on stomach_Breathing Normal',
-  'Lying down on stomach_Coughing',
-  'Lying down on stomach_Hyperventilating',
-  'Lying down on stomach_Other',
+  'Lying down on back - Breathing Normal',
+  'Lying down on back - Coughing',
+  'Lying down on back - Hyperventilating',
+  'Lying down on back - Other',
+  'Lying down on left - Breathing Normal',
+  'Lying down on left - Coughing',
+  'Lying down on left - Hyperventilating',
+  'Lying down on left - Other',
+  'Lying down on right - Breathing Normal',
+  'Lying down on right - Coughing',
+  'Lying down on right - Hyperventilating',
+  'Lying down on right - Other',
+  'Lying down on stomach - Breathing Normal',
+  'Lying down on stomach - Coughing',
+  'Lying down on stomach - Hyperventilating',
+  'Lying down on stomach - Other',
   'Miscellaneous movements',
   'Normal walking',
   'Running',
   'Shuffle walking',
-  'Sitting/standing_Breathing Normal',
-  'Sitting/standing_Coughing',
-  'Sitting/standing_Hyperventilating',
-  'Sitting/standing_Other'
+  'Sitting/standing : Breathing Normal',
+  'Sitting/standing : Coughing',
+  'Sitting/standing : Hyperventilating',
+  'Sitting/standing : Other'
 ];
 
 List<Activity> activities = [
@@ -82,8 +90,9 @@ List<Activity> activities = [
 ];
 
 Color getActivityColor(String activityName) {
-  String processedActivityName =
-      activityName.contains('_') ? activityName.split('_')[0] : activityName;
+  String processedActivityName = activityName.contains(' - ')
+      ? activityName.split(' - ')[0]
+      : activityName;
 
   return activities
       .firstWhere((activity) => activity.name == processedActivityName,
@@ -93,8 +102,9 @@ Color getActivityColor(String activityName) {
 }
 
 Widget getActivityIcon(String activityName) {
-  String processedActivityName =
-      activityName.contains('_') ? activityName.split('_')[0] : activityName;
+  String processedActivityName = activityName.contains(' - ')
+      ? activityName.split(' - ')[0]
+      : activityName;
 
   var activity = activities.firstWhere(
       (activity) => activity.name == processedActivityName,
@@ -103,73 +113,6 @@ Widget getActivityIcon(String activityName) {
 
   return Icon(activity.icon, size: 30, color: activity.color);
 }
-
-// Function to get dynamic border color based on activity
-// Function to get dynamic border color based on activity
-// Color getActivityColor(String activity) {
-//   switch (activity) {
-//     case "Ascending stairs":
-//       return Colors.deepOrange;
-//     case "Descending stairs":
-//       return Colors.brown;
-//     case "Lying down on back":
-//       return Colors.lightBlue;
-//     case "Lying down on left":
-//       return Colors.purple;
-//     case "Lying down on right":
-//       return Colors.pink;
-//     case "Lying down on stomach":
-//       return Colors.teal;
-//     case "Miscellaneous movements":
-//       return Colors.grey;
-//     case "Normal walking":
-//       return Colors.green;
-//     case "Running":
-//       return Colors.red;
-//     case "Shuffle walking":
-//       return Colors.amber;
-//     case "Sitting/standing":
-//       return Colors.indigo;
-//     default:
-//       return Colors.blue; // Default color when no specific activity is detected
-//   }
-// }
-
-// Widget getActivityIcon(String activity) {
-//   IconData icon;
-//   switch (activity) {
-//     case "Ascending stairs":
-//       icon = Icons.arrow_upward;
-//       break;
-//     case "Descending stairs":
-//       icon = Icons.arrow_downward;
-//       break;
-//     case "Lying down back":
-//     case "Lying down on left":
-//     case "Lying down right":
-//     case "Lying down on stomach":
-//       icon = Icons.bed;
-//       break;
-//     case "Miscellaneous movements":
-//       icon = Icons.shuffle;
-//       break;
-//     case "Normal walking":
-//       icon = Icons.directions_walk;
-//       break;
-//     case "Running":
-//       icon = Icons.directions_run;
-//       break;
-//     case "Shuffle walking":
-//       icon = Icons.transfer_within_a_station;
-//       break;
-//     case "Sitting/standing":
-//       icon = Icons.event_seat;
-//       break;
-//     default:
-//       icon = Icons.help_outline;
-//   }
-//   return Icon(icon, size: 30, color: getActivityColor(activity));
-// }
 
 List<String> combinedClasses = [
   'Lying down on back_Breathing Normal', //0
