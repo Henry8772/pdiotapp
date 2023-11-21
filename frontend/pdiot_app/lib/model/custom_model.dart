@@ -46,7 +46,7 @@ class CustomModel {
   getOutputList(ModelType? modelType) {
     switch (modelType) {
       case ModelType.physical:
-        return List.filled(1 * 5, 0).reshape([1, 5]);
+        return List.filled(1 * 11, 0).reshape([1, 11]);
       case ModelType.task2:
         return List.filled(1 * 20, 0).reshape([1, 20]);
       case ModelType.respiratory:

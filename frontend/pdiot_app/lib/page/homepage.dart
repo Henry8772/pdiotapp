@@ -128,11 +128,8 @@ class _HomePageState extends State<HomePage> {
     String physicalAct = result[ModelType.physical] ?? '';
     String respiratoryAct = result[ModelType.respiratory] ?? '';
     List<String> respAct = ['Hyperventilating', 'Coughing'];
-    if (physicalClassesWithRespiratory.contains(physicalAct)) {
-      return "$physicalAct - $respiratoryAct";
-    } else {
-      return physicalAct;
-    }
+
+    return physicalAct;
   }
 
   String modelToString(ModelType model) {
