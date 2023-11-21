@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
   bool isRecording = false;
   List<Float32List> gyro = [];
   List<Float32List> accAndGyro = [];
-  String selectedValue = 'Task 1';
+  String selectedValue = 'Physical';
 
   @override
   void initState() {
@@ -267,7 +267,7 @@ class _HomePageState extends State<HomePage> {
                 }
               });
             },
-            items: <String>['Task 1', 'Task 2&3']
+            items: <String>['Physical', 'Respiratory']
                 .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
