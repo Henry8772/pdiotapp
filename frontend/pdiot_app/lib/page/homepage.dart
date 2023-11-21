@@ -24,13 +24,15 @@ class _HomePageState extends State<HomePage> {
   bool isRecording = false;
   List<Float32List> gyro = [];
   List<Float32List> accAndGyro = [];
-  String selectedValue = 'Physical';
+
+  List<ModelType> dropdownModels = [ModelType.physical, ModelType.respiratory];
 
   @override
   void initState() {
     super.initState();
-    selectedModel = CustomModel().getCurrentModel();
-    modelLoaded = isModelLoaded();
+    loadedModel = CustomModel().getCurrentModel();
+
+    modelLoaded = isModelLoaded(loadedModel);
   }
 
   List<SensorData> chartAccData = [];
@@ -40,8 +42,8 @@ class _HomePageState extends State<HomePage> {
   DateTime startTime = DateTime.now();
   int counter = 0;
   ModelType selectedModel = ModelType.physical;
-  ModelType loadedModel = ModelType.task0; // Default selected value
-  List<ModelType> models = ModelType.values;
+  ModelType loadedModel = ModelType.unloaded; // Default selected value
+  List<ModelType> models = [ModelType.physical];
   String currentActivity = "None";
   bool modelLoaded = false;
 
@@ -79,8 +81,6 @@ class _HomePageState extends State<HomePage> {
 
     _dataSubscription = BluetoothConnect().dataStream.listen((data) async {
       if (!mounted) return;
-      print(
-          '${data['accX']}, ${data['accY']}, ${data['accZ']}, ${data['gyroX']}, ${data['gyroY']}, ${data['gyroZ']}');
 
       setState(() {
         chartAccData
@@ -92,25 +92,24 @@ class _HomePageState extends State<HomePage> {
 
       acc.add(Float32List.fromList([data['accX'], data['accY'], data['accZ']]));
 
-      accAndGyro.add(Float32List.fromList([
-        data['accX'],
-        data['accY'],
-        data['accZ'],
-        data['gyroX'],
-        data['gyroY'],
-        data['gyroZ']
-      ]));
+      // accAndGyro.add(Float32List.fromList([
+      //   data['accX'],
+      //   data['accY'],
+      //   data['accZ'],
+      //   data['gyroX'],
+      //   data['gyroY'],
+      //   data['gyroZ']
+      // ]));
       gyro.add(
           Float32List.fromList([data['gyroX'], data['gyroY'], data['gyroZ']]));
 
       if (acc.length % 25 == 0 && acc.length >= 50) {
         List<Float32List> last2SecData = acc.sublist(acc.length - 50);
-        List<Float32List> last2SecAllData =
-            accAndGyro.sublist(accAndGyro.length - 50);
+
         List<Float32List> last2SecGyroData = gyro.sublist(gyro.length - 50);
 
         Map<ModelType, String> result = await CustomModel()
-            .performInference(last2SecData, last2SecGyroData, last2SecAllData);
+            .performInference(last2SecData, last2SecGyroData);
         // String result = await CustomModel()
         //     .performInference(last2SecData, last2SecAllData, last2SecGyroData);
         String resultString = processModelResult(result);
@@ -131,22 +130,25 @@ class _HomePageState extends State<HomePage> {
   String processModelResult(Map<ModelType, String> result) {
     String physicalAct = result[ModelType.physical] ?? '';
     String respiratoryAct = result[ModelType.respiratory] ?? '';
-    // List<String> respAct = ['Hyperventilating', 'Coughing'];
-    if (physicalClassesWithRespiratory.contains(physicalAct)) {
-      return "$physicalAct - $respiratoryAct";
-    } else {
+    if (loadedModel == ModelType.physical) {
       return physicalAct;
+    } else if (loadedModel == ModelType.respiratory) {
+      if (physicalClassesWithRespiratory.contains(physicalAct)) {
+        return "$physicalAct - $respiratoryAct";
+      } else {
+        return physicalAct;
+      }
     }
+    return '';
   }
 
   String modelToString(ModelType model) {
     switch (model) {
       case ModelType.physical:
         return 'Physical';
-      case ModelType.task2:
-        return 'Respiratory';
+
       case ModelType.respiratory:
-        return 'Task 3';
+        return 'Respiratory';
       default:
         return '';
     }
@@ -262,29 +264,34 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Dropdown for model selection
-        DropdownButton<String>(
-            value: selectedValue, // Use the state variable here
-            onChanged: (String? newValue) {
-              setState(() {
-                if (newValue != null) {
-                  selectedValue = newValue; // Update the state variable
-                }
-              });
-            },
-            items: <String>['Physical', 'Respiratory']
-                .map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList()),
+
+// Now use 'dropdownModels' for your DropdownButton
+        DropdownButton<ModelType>(
+          value: selectedModel,
+          onChanged: (ModelType? newValue) {
+            if (newValue != null) {
+              selectedModel = newValue;
+              setState(() {});
+            }
+          },
+          items: const [
+            DropdownMenuItem<ModelType>(
+              value: ModelType.physical,
+              child: Text("Physical"),
+            ),
+            DropdownMenuItem<ModelType>(
+              value: ModelType.respiratory,
+              child: Text("Respiratory"),
+            ),
+          ],
+        ),
         SizedBox(width: 10), // Space between dropdown and button
 
         // Load button
         ElevatedButton(
           onPressed: () async {
-            if (!isModelLoaded()) {
-              modelLoaded = await CustomModel().loadModel();
+            if (!isModelLoaded(selectedModel)) {
+              modelLoaded = await CustomModel().loadModel(selectedModel);
               if (modelLoaded) {
                 setState(() {
                   loadedModel = selectedModel;
@@ -311,20 +318,20 @@ class _HomePageState extends State<HomePage> {
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.resolveWith<Color>(
               (Set<MaterialState> states) {
-                // return Colors.blue;
-                return modelLoaded ? Colors.green : Colors.blue;
+                return Colors.blue;
+                // return modelLoaded ? Colors.green : Colors.blue;
               },
             ),
           ),
-          // child: Text("Load Model"),
-          child: Text(modelLoaded ? "Model is Loaded" : "Load Model"),
+          child: Text("Load Model"),
+          // child: Text(modelLoaded ? "Model is Loaded" : "Load Model"),
         ),
       ],
     );
   }
 
-  bool isModelLoaded() {
-    return CustomModel().isModelLoaded();
+  bool isModelLoaded(ModelType modelType) {
+    return CustomModel().isModelLoaded(modelType);
   }
 
   // Combined Control Box for Recording and Model Selection
@@ -333,11 +340,11 @@ class _HomePageState extends State<HomePage> {
       padding: EdgeInsets.all(10),
       child: Column(
         children: [
-          // Text(
-          //   loadedModel == ModelType.task0
-          //       ? 'No model is loaded'
-          //       : 'Model ${modelToString(loadedModel)} is loaded',
-          // ),
+          Text(
+            loadedModel == ModelType.unloaded
+                ? 'No model is loaded'
+                : '${modelToString(loadedModel)} Model is loaded',
+          ),
           SizedBox(height: 10),
           modelSelectionAndLoad(),
           SizedBox(height: 10), // Spacing between buttons

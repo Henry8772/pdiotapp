@@ -4,13 +4,15 @@ import 'dart:typed_data';
 import 'package:pdiot_app/utils/classification_utils.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
-enum ModelType { task0, physical, task2, respiratory }
+enum ModelType { unloaded, physical, respiratory }
+
+enum SubModelType { physical11, physical5, respiratory4 }
 
 class CustomModel {
   static final CustomModel _singleton = CustomModel._internal();
 
   IsolateInterpreter? isolateInterpreter;
-  ModelType _currentModelType = ModelType.task0;
+  ModelType _currentModelType = ModelType.unloaded;
   IsolateInterpreter? isolateInterpreterPhysical;
   IsolateInterpreter? isolateInterpreterRespiratory;
 
@@ -22,10 +24,10 @@ class CustomModel {
     return _singleton;
   }
 
-  final Map<ModelType, List<String>> labelLists = {
-    ModelType.physical: physicalClasses,
-    ModelType.task2: combinedClasses,
-    ModelType.respiratory: respiratoryClasses,
+  final Map<SubModelType, List<String>> labelLists = {
+    SubModelType.physical5: physicalClasses5,
+    SubModelType.physical11: physicalClasses11,
+    SubModelType.respiratory4: respiratoryClasses,
   };
 
   ModelType getCurrentModel() {
@@ -34,8 +36,8 @@ class CustomModel {
 
   // Function to check if a model is loaded
 
-  bool isModelLoaded() {
-    return modelLoaded;
+  bool isModelLoaded(ModelType parameterModel) {
+    return modelLoaded && parameterModel == _currentModelType;
   }
 
   // bool isModelLoaded(ModelType selectedModel) {
@@ -43,49 +45,89 @@ class CustomModel {
   // }
 
   // Helper method to get the output shape based on model type
-  getOutputList(ModelType? modelType) {
+  getOutputList(SubModelType modelType) {
     switch (modelType) {
-      case ModelType.physical:
+      case SubModelType.physical11:
+        return List.filled(1 * 11, 0).reshape([1, 11]);
+      case SubModelType.physical5:
         return List.filled(1 * 5, 0).reshape([1, 5]);
-      case ModelType.task2:
-        return List.filled(1 * 20, 0).reshape([1, 20]);
-      case ModelType.respiratory:
+      case SubModelType.respiratory4:
         return List.filled(1 * 4, 0).reshape([1, 4]);
       default:
         return [1, 11]; // Default shape
     }
   }
 
-  Future<bool> loadModel() async {
-    // String physicalModelPath = 'assets/models/model_online_task_1.tflite';
-    String physicalModelPath =
+  Future<bool> loadModel(ModelType modelType) async {
+    String physicalModelPath11Class =
+        'assets/models/model_online_task_1.tflite';
+    String physicalModelPath5Class =
         'assets/models/model_online_task_1_5_class.tflite';
     String respiratoryModelPath =
         'assets/models/model_online_4CNN_3dense_4class_79_v2.tflite';
-    // String respiratoryModelPath = 'assets/models/model_4_class_v1.tflite';
+
+    _currentModelType = modelType;
 
     try {
-      // Load the physical model
-      final physicalInterpreter =
-          await Interpreter.fromAsset(physicalModelPath);
-      isolateInterpreterPhysical =
-          await IsolateInterpreter.create(address: physicalInterpreter.address);
-      print('Physical model loaded successfully in isolate');
+      if (modelType == ModelType.physical) {
+        // Load only the physical model
+        final physicalInterpreter =
+            await Interpreter.fromAsset(physicalModelPath11Class);
+        isolateInterpreterPhysical = await IsolateInterpreter.create(
+            address: physicalInterpreter.address);
+        print('Physical 11 model loaded successfully in isolate');
+      } else if (modelType == ModelType.respiratory) {
+        // Load both physical and respiratory models
+        final physicalInterpreter =
+            await Interpreter.fromAsset(physicalModelPath5Class);
+        isolateInterpreterPhysical = await IsolateInterpreter.create(
+            address: physicalInterpreter.address);
+        print('Physical 5 model loaded successfully in isolate');
 
-      // Load the respiratory model
-      final respiratoryInterpreter =
-          await Interpreter.fromAsset(respiratoryModelPath);
-      isolateInterpreterRespiratory = await IsolateInterpreter.create(
-          address: respiratoryInterpreter.address);
-      print('Respiratory model loaded successfully in isolate');
+        final respiratoryInterpreter =
+            await Interpreter.fromAsset(respiratoryModelPath);
+        isolateInterpreterRespiratory = await IsolateInterpreter.create(
+            address: respiratoryInterpreter.address);
+        print('Respiratory 4 model loaded successfully in isolate');
+      }
       modelLoaded = true;
-
       return true;
     } catch (e) {
       print('Failed to load models in isolate: $e');
       return false;
     }
   }
+
+  // Future<bool> loadModel() async {
+  //   // String physicalModelPath = 'assets/models/model_online_task_1.tflite';
+  //   String physicalModelPath =
+  //       'assets/models/model_online_task_1_5_class.tflite';
+  //   String respiratoryModelPath =
+  //       'assets/models/model_online_4CNN_3dense_4class_79_v2.tflite';
+  //   // String respiratoryModelPath = 'assets/models/model_4_class_v1.tflite';
+
+  //   try {
+  //     // Load the physical model
+  //     final physicalInterpreter =
+  //         await Interpreter.fromAsset(physicalModelPath);
+  //     isolateInterpreterPhysical =
+  //         await IsolateInterpreter.create(address: physicalInterpreter.address);
+  //     print('Physical model loaded successfully in isolate');
+
+  //     // Load the respiratory model
+  //     final respiratoryInterpreter =
+  //         await Interpreter.fromAsset(respiratoryModelPath);
+  //     isolateInterpreterRespiratory = await IsolateInterpreter.create(
+  //         address: respiratoryInterpreter.address);
+  //     print('Respiratory model loaded successfully in isolate');
+  //     modelLoaded = true;
+
+  //     return true;
+  //   } catch (e) {
+  //     print('Failed to load models in isolate: $e');
+  //     return false;
+  //   }
+  // }
 
   // Updated load model method
   // Future<bool> loadModel(ModelType modelType) async {
@@ -125,20 +167,23 @@ class CustomModel {
   // }
 
   Future<Map<ModelType, String>> performInference(
-      List<Float32List> inputAccData,
-      List<Float32List> inputGyroData,
-      List<Float32List> inputAllData) async {
+      List<Float32List> inputAccData, List<Float32List> inputGyroData) async {
     Map<ModelType, String> results = {};
 
     if (isolateInterpreterPhysical != null) {
+      SubModelType physicalModel = _currentModelType == ModelType.physical
+          ? SubModelType.physical11
+          : SubModelType.physical5;
       var resultTask1 = await _performInferenceOnModel(
-          ModelType.physical, isolateInterpreterPhysical!, inputAccData);
+          physicalModel, isolateInterpreterPhysical!, inputAccData);
       results[ModelType.physical] = resultTask1;
     }
 
     if (isolateInterpreterRespiratory != null) {
       var resultTask3 = await _performInferenceOnModel(
-          ModelType.respiratory, isolateInterpreterRespiratory!, inputGyroData);
+          SubModelType.respiratory4,
+          isolateInterpreterRespiratory!,
+          inputGyroData);
       results[ModelType.respiratory] = resultTask3;
     }
 
@@ -147,7 +192,7 @@ class CustomModel {
     return results;
   }
 
-  Future<String> _performInferenceOnModel(ModelType modelType,
+  Future<String> _performInferenceOnModel(SubModelType modelType,
       IsolateInterpreter interpreter, List<Float32List> inputData) async {
     print("$modelType Input is ${inputData.shape}");
     var output = getOutputList(modelType);
@@ -168,14 +213,16 @@ class CustomModel {
     }
   }
 
-  String getDefaultReturnValue(ModelType modelType) {
+  String getDefaultReturnValue(SubModelType modelType) {
     switch (modelType) {
-      case ModelType.physical:
+      case SubModelType.physical11:
         return 'Miscellaneous movements';
-      case ModelType.respiratory:
-        return 'Other';
+      case SubModelType.physical5:
+        return 'Sitting/standing';
+      case SubModelType.respiratory4:
+        return 'Sitting/standing';
       default:
-        return 'Miscellaneous movements'; // Default for other model types
+        return 'Other'; // Default for other model types
     }
   }
 

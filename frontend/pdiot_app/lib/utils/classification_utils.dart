@@ -11,7 +11,7 @@ class Activity {
   Activity({required this.name, required this.color, required this.icon});
 }
 
-List<String> physicalClasses = [
+List<String> physicalClasses5 = [
   'Lying down on back',
   'Lying down on left',
   'Lying down on right',
@@ -19,19 +19,19 @@ List<String> physicalClasses = [
   'Sitting/standing',
 ];
 
-// List<String> physicalClasses = [
-//   'Ascending stairs',
-//   'Descending stairs',
-//   'Lying down on back',
-//   'Lying down on left',
-//   'Lying down on right',
-//   'Lying down on stomach',
-//   'Miscellaneous movements',
-//   'Normal walking',
-//   'Running',
-//   'Shuffle walking',
-//   'Sitting/standing',
-// ];
+List<String> physicalClasses11 = [
+  'Ascending stairs',
+  'Descending stairs',
+  'Lying down on back',
+  'Lying down on left',
+  'Lying down on right',
+  'Lying down on stomach',
+  'Miscellaneous movements',
+  'Normal walking',
+  'Running',
+  'Shuffle walking',
+  'Sitting/standing',
+];
 
 List<String> physicalClassesWithRespiratory = [
   'Lying down on back',
