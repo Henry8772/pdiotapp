@@ -109,14 +109,15 @@ class _HomePageState extends State<HomePage> {
         // String result = await CustomModel()
         //     .performInference(last2SecData, last2SecAllData, last2SecGyroData);
         String resultString = processModelResult(result);
+        String physicalAct = result[ModelType.physical]!;
         setState(() {
           currentActivity = resultString;
         });
-        if (currentSessionActivities[resultString] == null) {
-          currentSessionActivities[resultString] = 1;
+        if (currentSessionActivities[physicalAct] == null) {
+          currentSessionActivities[physicalAct] = 1;
         } else {
-          currentSessionActivities[resultString] =
-              currentSessionActivities[resultString]! + 1;
+          currentSessionActivities[physicalAct] =
+              currentSessionActivities[physicalAct]! + 1;
         }
       }
     });
@@ -287,8 +288,6 @@ class _HomePageState extends State<HomePage> {
               );
             }
           },
-          // child: Text("Load Model"),
-          child: Text(modelLoaded ? "Model is Loaded" : "Load Model"),
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.resolveWith<Color>(
               (Set<MaterialState> states) {
@@ -297,6 +296,8 @@ class _HomePageState extends State<HomePage> {
               },
             ),
           ),
+          // child: Text("Load Model"),
+          child: Text(modelLoaded ? "Model is Loaded" : "Load Model"),
         ),
       ],
     );
