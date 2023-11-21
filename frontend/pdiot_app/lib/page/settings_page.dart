@@ -76,7 +76,6 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void connectBluetooth(String deviceId) async {
-    print(deviceId);
     Pref.saveBluetoothId(deviceId);
     setState(() {
       _isConnecting = true;

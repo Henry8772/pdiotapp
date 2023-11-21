@@ -79,6 +79,9 @@ class _HomePageState extends State<HomePage> {
 
     _dataSubscription = BluetoothConnect().dataStream.listen((data) async {
       if (!mounted) return;
+      print(
+          '${data['accX']}, ${data['accY']}, ${data['accZ']}, ${data['gyroX']}, ${data['gyroY']}, ${data['gyroZ']}');
+
       setState(() {
         chartAccData
             .add(SensorData(counter, data['accX'], data['accY'], data['accZ']));
@@ -105,6 +108,7 @@ class _HomePageState extends State<HomePage> {
         List<Float32List> last2SecAllData =
             accAndGyro.sublist(accAndGyro.length - 50);
         List<Float32List> last2SecGyroData = gyro.sublist(gyro.length - 50);
+
         Map<ModelType, String> result = await CustomModel()
             .performInference(last2SecData, last2SecGyroData, last2SecAllData);
         // String result = await CustomModel()
@@ -127,7 +131,7 @@ class _HomePageState extends State<HomePage> {
   String processModelResult(Map<ModelType, String> result) {
     String physicalAct = result[ModelType.physical] ?? '';
     String respiratoryAct = result[ModelType.respiratory] ?? '';
-    List<String> respAct = ['Hyperventilating', 'Coughing'];
+    // List<String> respAct = ['Hyperventilating', 'Coughing'];
     if (physicalClassesWithRespiratory.contains(physicalAct)) {
       return "$physicalAct - $respiratoryAct";
     } else {

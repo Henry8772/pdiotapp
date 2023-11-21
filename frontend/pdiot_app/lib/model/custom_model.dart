@@ -149,12 +149,14 @@ class CustomModel {
 
   Future<String> _performInferenceOnModel(ModelType modelType,
       IsolateInterpreter interpreter, List<Float32List> inputData) async {
+    print("$modelType Input is ${inputData.shape}");
     var output = getOutputList(modelType);
 
     await interpreter.run([inputData], output);
-
+    print("$modelType Output is $output");
     List<double> data = output[0];
-    int argMaxIndex = data.indexWhere((element) => element == data.reduce(max));
+    int argMaxIndex = data
+        .indexWhere((element) => element == data.reduce((a, b) => max(a, b)));
 
     if (argMaxIndex == -1) {
       return getDefaultReturnValue(modelType);

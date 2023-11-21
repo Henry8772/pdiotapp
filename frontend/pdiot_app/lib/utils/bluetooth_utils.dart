@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'dart:typed_data';
-import '../page/chart_controller.dart';
 
 class AccelerometerReading {
   final double x;
@@ -82,7 +81,6 @@ class BluetoothConnect {
   BluetoothConnect._internal();
 
   final FlutterReactiveBle _ble = FlutterReactiveBle();
-  final List<DiscoveredDevice> _devicesList = [];
   final StreamController<Map<String, dynamic>> _dataStreamController =
       StreamController.broadcast();
 
@@ -116,9 +114,11 @@ class BluetoothConnect {
       connectionTimeout: const Duration(seconds: 2),
     )
         .listen((connectionState) {
-      if (connectionState.connectionState == DeviceConnectionState.connected) {
-        print('Device connected');
+      if (connectionState.connectionState == DeviceConnectionState.connected &&
+          !isConnected) {
         isConnected = true;
+        print('Dexxvice connected');
+
         discoverServices(device.id);
 
         // Trigger the callback on successful connection
@@ -138,7 +138,6 @@ class BluetoothConnect {
       {ConnectionCallback? onConnectionChanged}) {
     _ble.scanForDevices(scanMode: ScanMode.lowLatency, withServices: []).listen(
         (device) {
-      _devicesList.add(device);
       if (device.name.contains('Res6AL') && device.id == deviceId) {
         connectToDevice(device, onConnectionChanged: onConnectionChanged);
       }
