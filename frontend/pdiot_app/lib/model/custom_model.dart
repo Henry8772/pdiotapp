@@ -63,7 +63,7 @@ class CustomModel {
           break;
         case ModelType.task2:
           // modelPath = 'assets/models/model_task23.tflite';
-          modelPath = 'assets/models/model_online_3CNN_20.tflite';
+          modelPath = 'assets/models/model_online_3CNN_2dense_74.tflite';
           break;
         case ModelType.task3:
           modelPath = 'assets/models/model_4_class_v1.tflite';
