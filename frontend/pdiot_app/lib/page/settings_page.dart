@@ -24,10 +24,6 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void loadData() async {
-    // var bluetoothId = await Pref.getBluetoothID();
-    // print(bluetoothId);
-    // CurrentUser.instance.loadUser();
-    // print(CurrentUser.instance.bluetoothId);
     await CurrentUser.instance.loadUser();
     _isBluetoothConnected = BluetoothConnect().isBluetoothConnected();
     setState(() {

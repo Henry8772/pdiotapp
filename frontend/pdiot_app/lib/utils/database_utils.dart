@@ -7,6 +7,7 @@ class DatabaseHelper {
   static Database? _database;
 
   static Future<void> initDatabase() async {
+    // final dbPath = await getDatabasesPath();
     final dbPath = await getDatabasesPath();
     _database = await openDatabase(
       join(dbPath, 'user_database.db'),
@@ -25,7 +26,7 @@ class DatabaseHelper {
         );
         // Create session_activities table
         await db.execute(
-          'CREATE TABLE session_activities(id INTEGER PRIMARY KEY AUTOINCREMENT, sessionId INTEGER, activityId INTEGER, duration INTEGER, FOREIGN KEY(sessionId) REFERENCES sessions(id), FOREIGN KEY(activityId) REFERENCES activities(id))',
+          'CREATE TABLE session_activities(id INTEGER PRIMARY KEY AUTOINCREMENT, sessionId INTEGER, activityId INTEGER, respiratoryType TEXT, duration INTEGER, FOREIGN KEY(sessionId) REFERENCES sessions(id), FOREIGN KEY(activityId) REFERENCES activities(id))',
         );
 
         await _populateActivities(db);
@@ -38,13 +39,13 @@ class DatabaseHelper {
     // List of activities to be added
     // List<String> activities = physicalClasses;
 
-    // for (String activity in activities) {
-    //   await db.insert('activities', {'name': activity});
-    // }
-
-    for (String activity in allClasses) {
+    for (String activity in physicalClasses11) {
       await db.insert('activities', {'name': activity});
     }
+
+    // for (String activity in allClasses) {
+    //   await db.insert('activities', {'name': activity});
+    // }
   }
 
   // Insert a user
@@ -115,12 +116,18 @@ class DatabaseHelper {
         .delete('sessions', where: 'id = ?', whereArgs: [id]);
   }
 
-  // Insert a session activity
   static Future<int> insertSessionActivity(
       Map<String, dynamic> sessionActivity) async {
     return await _database!.insert('session_activities', sessionActivity,
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
+
+  // Insert a session activity
+  // static Future<int> insertSessionActivity(
+  //     Map<String, dynamic> sessionActivity) async {
+  //   return await _database!.insert('session_activities', sessionActivity,
+  //       conflictAlgorithm: ConflictAlgorithm.replace);
+  // }
 
 // Get all session activities
   static Future<List<Map<String, dynamic>>> getSessionActivities() async {
@@ -177,7 +184,7 @@ class DatabaseHelper {
         .delete('session_activities', where: 'id = ?', whereArgs: [id]);
   }
 
-  static Future<Map<String, int>> getTimeSpentOnActivitiesByDay(
+  static Future<Map<String, ActivityData>> getTimeSpentOnActivitiesByDay(
       DateTime selectedDateTime) async {
     int userId =
         int.parse(CurrentUser.instance.id.value); // Get the current user's ID
@@ -189,12 +196,15 @@ class DatabaseHelper {
 
     // Query to join tables and calculate the sum of duration for each activity for the current user
     String query = '''
-    SELECT a.name, SUM(sa.duration) as totalDuration
-    FROM activities a
-    JOIN session_activities sa ON a.id = sa.activityId
-    JOIN sessions s ON sa.sessionId = s.id
-    WHERE s.userId = ? AND (DATE(s.startTime) = DATE(?) OR DATE(s.endTime) = DATE(?))
-    GROUP BY a.name
+SELECT a.name, 
+       sa.respiratoryType, 
+       SUM(sa.duration) as totalDuration
+FROM activities a
+JOIN session_activities sa ON a.id = sa.activityId
+JOIN sessions s ON sa.sessionId = s.id
+WHERE s.userId = ? AND (DATE(s.startTime) = DATE(?) OR DATE(s.endTime) = DATE(?))
+GROUP BY a.name, sa.respiratoryType
+
   ''';
 
     // Execute the query with the user ID
@@ -202,15 +212,57 @@ class DatabaseHelper {
         await _database!.rawQuery(query, [userId, todayDate, todayDate]);
 
     // Convert the query results to a more readable format
-    Map<String, int> activityDurations = {};
+    Map<String, ActivityData> activityDurations = {};
     for (var row in activityResults) {
-      activityDurations[row['name']] = row['totalDuration'];
-    }
+      String activityName = row['name'];
+      String respiratoryType = row['respiratoryType'] ?? 'Overall';
+      int duration = row['totalDuration'];
 
-    return activityDurations;
+      activityDurations.putIfAbsent(
+          activityName,
+          () => ActivityData(
+                overallDuration: 0,
+                breathinDuration: 0,
+                coughingDuration: 0,
+                physicalDuration: 0,
+                hyperventilatingDuration: 0,
+                otherDuration: 0,
+              ));
+      activityDurations[activityName]?.overallDuration += duration;
+      switch (respiratoryType) {
+        case 'Breathing Normal':
+          activityDurations[activityName]?.breathinDuration += duration;
+          break;
+        case 'Coughing':
+          activityDurations[activityName]?.coughingDuration += duration;
+          break;
+        case 'physical':
+          activityDurations[activityName]?.physicalDuration += duration;
+          break;
+        case 'Hyperventilating':
+          activityDurations[activityName]?.hyperventilatingDuration += duration;
+          break;
+        case 'Other':
+          activityDurations[activityName]?.otherDuration += duration;
+          break;
+      }
+    }
+    var sortedEntries = activityDurations.entries.toList();
+
+// Sort the entries in descending order of overallDuration
+    sortedEntries.sort(
+        (a, b) => b.value.overallDuration.compareTo(a.value.overallDuration));
+
+// Convert the sorted entries back into a map
+    Map<String, ActivityData> sortedActivityDurations = {
+      for (var e in sortedEntries) e.key: e.value
+    };
+
+    return sortedActivityDurations;
+    // return activityDurations;
   }
 
-  static Future<Map<String, int>> getTimeSpentOnActivitiesInRange(
+  static Future<Map<String, ActivityData>> getTimeSpentOnActivitiesInRange(
       DateTime startDate, DateTime endDate) async {
     int userId = int.parse(CurrentUser.instance.id.value);
 
@@ -223,28 +275,69 @@ class DatabaseHelper {
 
     // Modified query to incorporate userId
     String query = '''
-  SELECT a.name, SUM(sa.duration) as totalDuration
-  FROM activities a
-  JOIN session_activities sa ON a.id = sa.activityId
-  JOIN sessions s ON sa.sessionId = s.id
-  WHERE s.userId = ? AND DATE(s.startTime) >= DATE(?) AND DATE(s.endTime) <= DATE(?)
-  GROUP BY a.name
+SELECT a.name, 
+       sa.respiratoryType, 
+       SUM(sa.duration) as totalDuration
+FROM activities a
+JOIN session_activities sa ON a.id = sa.activityId
+JOIN sessions s ON sa.sessionId = s.id
+WHERE s.userId = ? AND (DATE(s.startTime) = DATE(?) OR DATE(s.endTime) = DATE(?))
+GROUP BY a.name, sa.respiratoryType
+
   ''';
 
-    // Execute the query with the userId included in the parameters
-    List<Map<String, dynamic>> results =
+    // Execute the query with the user ID
+    List<Map<String, dynamic>> activityResults =
         await _database!.rawQuery(query, [userId, startDateStr, endDateStr]);
 
     // Convert the query results to a more readable format
-    Map<String, int> activityDurations = {};
-    for (var row in results) {
-      activityDurations[row['name']] = row['totalDuration'];
+    Map<String, ActivityData> activityDurations = {};
+    for (var row in activityResults) {
+      String activityName = row['name'];
+      String respiratoryType = row['respiratoryType'] ?? 'Overall';
+      int duration = row['totalDuration'];
+
+      activityDurations.putIfAbsent(
+          activityName,
+          () => ActivityData(
+                overallDuration: 0,
+                breathinDuration: 0,
+                coughingDuration: 0,
+                physicalDuration: 0,
+                hyperventilatingDuration: 0,
+                otherDuration: 0,
+              ));
+      activityDurations[activityName]?.overallDuration += duration;
+      switch (respiratoryType) {
+        case 'Breathing Normal':
+          activityDurations[activityName]?.breathinDuration += duration;
+          break;
+        case 'Coughing':
+          activityDurations[activityName]?.coughingDuration += duration;
+          break;
+        case 'physical':
+          activityDurations[activityName]?.physicalDuration += duration;
+          break;
+        case 'Hyperventilating':
+          activityDurations[activityName]?.hyperventilatingDuration += duration;
+          break;
+        case 'Other':
+          activityDurations[activityName]?.otherDuration += duration;
+          break;
+      }
     }
+    var sortedEntries = activityDurations.entries.toList();
 
-    return activityDurations;
+// Sort the entries in descending order of overallDuration
+    sortedEntries.sort(
+        (a, b) => b.value.overallDuration.compareTo(a.value.overallDuration));
+
+// Convert the sorted entries back into a map
+    Map<String, ActivityData> sortedActivityDurations = {
+      for (var e in sortedEntries) e.key: e.value
+    };
+
+    return sortedActivityDurations;
+    // return activityDurations;
   }
-
-  // Add methods to insert and retrieve sessions, activities, and session activities
-
-  // You would add similar methods for sessions and session_activities
 }

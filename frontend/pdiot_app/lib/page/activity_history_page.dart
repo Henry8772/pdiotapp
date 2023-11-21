@@ -1,8 +1,8 @@
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:pdiot_app/utils/classification_utils.dart';
 import 'package:pdiot_app/utils/database_utils.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 class ActivitiHistoryPage extends StatefulWidget {
   const ActivitiHistoryPage({super.key});
@@ -12,7 +12,7 @@ class ActivitiHistoryPage extends StatefulWidget {
 }
 
 class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
-  Map<String, int> activities = {};
+  Map<String, ActivityData> activities = {};
   //There will be 12 acitivities, remember to leave space in ui
   String _selectedTimeframe = 'Day';
   DateTime _selectedDateTime = DateTime.now();
@@ -49,12 +49,7 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
         alignment: Alignment.center,
         children: [
           Positioned(top: 0, child: Image.asset('assets/images/组 117@2x.png')),
-          Positioned(
-            top: 54,
-            left: 16,
-            child: Text("History",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          ),
+          historyTitle(),
           Positioned(
             top: 108,
             left: 0,
@@ -105,7 +100,7 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
                           ),
                         )
                       : SizedBox(),
-                  SizedBox(
+                  const SizedBox(
                     height: 20,
                   ),
                   Padding(
@@ -179,8 +174,8 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
                       ),
                     ),
                   if (activities.isEmpty)
-                    Center(
-                      child: const Padding(
+                    const Center(
+                      child: Padding(
                         padding: EdgeInsets.only(top: 20),
                         child: Text(
                           'No available data',
@@ -191,19 +186,47 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
                     ),
                   ListView.separated(
                     itemCount: activities.length,
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     itemBuilder: (context, index) {
                       String activityName = activities.keys.elementAt(index);
-                      int durationInSeconds =
+                      ActivityData activityData =
                           activities.values.elementAt(index);
+                      int durationInSeconds = activityData.overallDuration;
                       Color activityColor = pieColors[index %
                           pieColors.length]; // Assign a color from the list
 
+                      activities.values.elementAt(index);
+
+                      List<String> activityDetails = [];
+
+                      // Check and add details for non-zero durations
+                      if (activityData.breathinDuration > 0) {
+                        activityDetails.add(
+                            "- Breathing normal: ${formatDuration(activityData.breathinDuration)}");
+                      }
+                      if (activityData.coughingDuration > 0) {
+                        activityDetails.add(
+                            "- Coughing: ${formatDuration(activityData.coughingDuration)}");
+                      }
+
+                      if (activityData.hyperventilatingDuration > 0) {
+                        activityDetails.add(
+                            "- Hyperventilating: ${formatDuration(activityData.hyperventilatingDuration)}");
+                      }
+                      if (activityData.otherDuration > 0) {
+                        activityDetails.add(
+                            "- Other: ${formatDuration(activityData.otherDuration)}");
+                      }
+                      if (activityDetails.isNotEmpty &&
+                          activityData.physicalDuration > 0) {
+                        activityDetails.add(
+                            "- Physical (non-respiratory): ${formatDuration(activityData.physicalDuration)}");
+                      }
+
                       return Container(
-                        height: 54,
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             color: Colors.white,
@@ -214,55 +237,77 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
                                   spreadRadius: 0,
                                   blurRadius: 50)
                             ]),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 24,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                  color: activityColor,
-                                  borderRadius: BorderRadius.circular(24)),
-                              child: Icon(
-                                Icons.access_time,
-                                color: Colors.white,
-                                size: 16,
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                        color: activityColor,
+                                        borderRadius:
+                                            BorderRadius.circular(24)),
+                                    child: const Icon(
+                                      Icons.access_time,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 12,
+                                  ),
+                                  Expanded(
+                                    child: Text(activityName,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xff333333),
+                                            fontSize: 16)),
+                                  ),
+                                  const SizedBox(
+                                    width: 12,
+                                  ),
+                                  Text(
+                                    formatDuration(durationInSeconds),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xff333333),
+                                        fontSize: 14),
+                                  )
+                                ],
                               ),
-                            ),
-                            SizedBox(
-                              width: 12,
-                            ),
-                            Expanded(
-                              child: Text(activityName,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xff333333),
-                                      fontSize: 16)),
-                            ),
-                            SizedBox(
-                              width: 12,
-                            ),
-                            Text(
-                              formatDuration(durationInSeconds),
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff333333),
-                                  fontSize: 14),
-                            )
-                          ],
-                        ),
-                      );
-                      return Card(
-                        child: ListTile(
-                          leading: Icon(Icons.access_time,
-                              color: activityColor), // Use the assigned color
-                          title: Text(activityName,
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text(formatDuration(durationInSeconds)),
-                        ),
+                              SizedBox(
+                                  height:
+                                      activityDetails.isNotEmpty ? 10.0 : 0),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: activityDetails.map((detail) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(bottom: 8.0),
+                                    child: Row(
+                                      children: [
+                                        SizedBox(width: 40.0),
+                                        Expanded(
+                                          child: Text(
+                                            detail, // Assuming 'description' holds the text
+                                            style: const TextStyle(
+                                              fontSize: 14.0,
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              )
+                            ]),
                       );
                     },
                     separatorBuilder: (BuildContext context, int index) {
-                      return SizedBox(
+                      return const SizedBox(
                         height: 10,
                       );
                     },
@@ -336,8 +381,11 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
     int remainingSeconds = seconds % 60;
     if (hours == 0 && minutes == 0) {
       return '${remainingSeconds}s'; // Return only seconds if less than a minute
+    } else if (hours == 0) {
+      return '${minutes}m';
+    } else {
+      return '${hours}h ${minutes}m';
     }
-    return '${hours}h ${minutes}m';
   }
 
   void changeDateTime(DateTime selectedDate) async {
@@ -345,17 +393,34 @@ class _ActivitiHistoryPageState extends State<ActivitiHistoryPage> {
     _loadActivities();
   }
 
-  List<PieSeries<MapEntry<String, int>, String>> _createPieSeries() {
+  List<PieSeries<MapEntry<String, ActivityData>, String>> _createPieSeries() {
     final data = activities.entries.toList();
-    return <PieSeries<MapEntry<String, int>, String>>[
-      PieSeries<MapEntry<String, int>, String>(
+    return <PieSeries<MapEntry<String, ActivityData>, String>>[
+      PieSeries<MapEntry<String, ActivityData>, String>(
         dataSource: data,
-        xValueMapper: (MapEntry<String, int> data, _) => data.key,
-        yValueMapper: (MapEntry<String, int> data, _) => data.value,
-        pointColorMapper: (MapEntry<String, int> data, _) => pieColors[
+        xValueMapper: (MapEntry<String, ActivityData> data, _) => data.key,
+        yValueMapper: (MapEntry<String, ActivityData> data, _) =>
+            data.value.overallDuration,
+        pointColorMapper: (MapEntry<String, ActivityData> data, _) => pieColors[
             activities.keys.toList().indexOf(data.key) % pieColors.length],
         dataLabelSettings: DataLabelSettings(isVisible: true),
       ),
     ];
+  }
+}
+
+class historyTitle extends StatelessWidget {
+  const historyTitle({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 54,
+      left: 16,
+      child: Text("History",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+    );
   }
 }

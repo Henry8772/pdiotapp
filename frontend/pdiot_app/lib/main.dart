@@ -84,7 +84,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   final pages = [
-    ActivitiHistoryPage(),
+    const ActivitiHistoryPage(),
     HomePage(),
     SettingsPage(),
   ];
@@ -121,8 +121,10 @@ class _MainPageState extends State<MainPage> {
         currentIndex: _currentIndex,
         onTap: (int index) => _pageController.jumpToPage(index),
         elevation: 0,
-        selectedLabelStyle: TextStyle(color: Color(0xff666F83), fontSize: 12),
-        unselectedLabelStyle: TextStyle(color: Color(0xff3E87F6), fontSize: 12),
+        selectedLabelStyle:
+            const TextStyle(color: Color(0xff666F83), fontSize: 12),
+        unselectedLabelStyle:
+            const TextStyle(color: Color(0xff3E87F6), fontSize: 12),
         items: [
           BottomNavigationBarItem(
               label: 'History',

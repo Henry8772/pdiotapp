@@ -9,10 +9,9 @@ class LoginController extends GetxController {
   Future<bool> login(username, password) async {
     final users = await DatabaseHelper.getUsers();
 
-    for (var user in users!) {
+    for (var user in users) {
       if (user['username'] == username && user['password'] == password) {
         // Login successful
-        print('user found');
         CurrentUser.instance
             .setCurrentUser(user['id'].toString(), user['username']);
         return true;

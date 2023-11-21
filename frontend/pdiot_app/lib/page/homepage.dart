@@ -92,14 +92,6 @@ class _HomePageState extends State<HomePage> {
 
       acc.add(Float32List.fromList([data['accX'], data['accY'], data['accZ']]));
 
-      // accAndGyro.add(Float32List.fromList([
-      //   data['accX'],
-      //   data['accY'],
-      //   data['accZ'],
-      //   data['gyroX'],
-      //   data['gyroY'],
-      //   data['gyroZ']
-      // ]));
       gyro.add(
           Float32List.fromList([data['gyroX'], data['gyroY'], data['gyroZ']]));
 
@@ -113,15 +105,15 @@ class _HomePageState extends State<HomePage> {
         // String result = await CustomModel()
         //     .performInference(last2SecData, last2SecAllData, last2SecGyroData);
         String resultString = processModelResult(result);
-        String physicalAct = result[ModelType.physical]!;
+        // String physicalAct = result[ModelType.physical]!;
         setState(() {
           currentActivity = resultString;
         });
-        if (currentSessionActivities[physicalAct] == null) {
-          currentSessionActivities[physicalAct] = 1;
+        if (currentSessionActivities[resultString] == null) {
+          currentSessionActivities[resultString] = 1;
         } else {
-          currentSessionActivities[physicalAct] =
-              currentSessionActivities[physicalAct]! + 1;
+          currentSessionActivities[resultString] =
+              currentSessionActivities[resultString]! + 1;
         }
       }
     });
@@ -186,15 +178,30 @@ class _HomePageState extends State<HomePage> {
       Map<String, int> sessionDurations, DateTime startTime) async {
     int userId = int.parse(CurrentUser.instance.id.value);
     int sessionId = await DatabaseHelper.createNewSession(userId, startTime);
+    Map<String, dynamic> sessionActivity = {};
 
     sessionDurations.forEach((activityName, duration) async {
-      int activityId = await DatabaseHelper.getActivityIdByName(
-          activityName); // Get activity ID by name
-      Map<String, dynamic> sessionActivity = {
-        'sessionId': sessionId,
-        'activityId': activityId,
-        'duration': duration,
-      };
+      if (activityName.contains(" - ")) {
+        var activity = activityName.split(' - ')[0];
+        var respiratory = activityName.split(' - ')[1];
+        int activityId = await DatabaseHelper.getActivityIdByName(
+            activity); // Get activity ID by name
+        sessionActivity = {
+          'sessionId': sessionId,
+          'activityId': activityId,
+          'duration': duration,
+          'respiratoryType': respiratory,
+        };
+      } else {
+        int activityId = await DatabaseHelper.getActivityIdByName(
+            activityName); // Get activity ID by name
+        sessionActivity = {
+          'sessionId': sessionId,
+          'activityId': activityId,
+          'duration': duration,
+          'respiratoryType': 'physical',
+        };
+      }
 
       await DatabaseHelper.insertSessionActivity(sessionActivity);
     });

@@ -187,18 +187,14 @@ class CustomModel {
       results[ModelType.respiratory] = resultTask3;
     }
 
-    print(results);
-
     return results;
   }
 
   Future<String> _performInferenceOnModel(SubModelType modelType,
       IsolateInterpreter interpreter, List<Float32List> inputData) async {
-    print("$modelType Input is ${inputData.shape}");
     var output = getOutputList(modelType);
 
     await interpreter.run([inputData], output);
-    print("$modelType Output is $output");
     List<double> data = output[0];
     int argMaxIndex = data
         .indexWhere((element) => element == data.reduce((a, b) => max(a, b)));
@@ -225,44 +221,6 @@ class CustomModel {
         return 'Other'; // Default for other model types
     }
   }
-
-  // Updated perform inference method
-  // Future<String> performInference(List<Float32List> inputAccData,
-  //     List<Float32List> inputAllData, List<Float32List> inputGyroData) async {
-  //   if (isolateInterpreter == null) {
-  //     print('Model not loaded yet');
-  //     return 'Error: Model not loaded';
-  //   }
-
-  //   List<List<Float32List>> finalInputData = [];
-
-  //   // print(_currentModelType);
-
-  //   if (_currentModelType == ModelType.task1) {
-  //     finalInputData = [inputAccData];
-  //   } else if (_currentModelType == ModelType.task3) {
-  //     finalInputData = [inputGyroData];
-  //   } else {
-  //     finalInputData = [inputAllData];
-  //   }
-
-  //   List<double> data = output[0];
-  //   // print(data);
-  //   int argMaxIndex = data.indexWhere((element) => element == data.reduce(max));
-
-  //   print(argMaxIndex);
-  //   if (argMaxIndex == -1) {
-  //     return 'Miscellaneous movements';
-  //   } else {
-  //     var currentLabelList = labelLists[_currentModelType] ?? [];
-
-  //     return currentLabelList.isNotEmpty
-  //         ? currentLabelList[argMaxIndex]
-  //         : 'Miscellaneous movements';
-  //   }
-
-  //   // Retrieve the label list for the current model
-  // }
 }
 
 // Extension method to flatten a list of lists

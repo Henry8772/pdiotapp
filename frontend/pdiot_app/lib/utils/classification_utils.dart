@@ -11,6 +11,31 @@ class Activity {
   Activity({required this.name, required this.color, required this.icon});
 }
 
+class ActivityData {
+  int overallDuration;
+  int breathinDuration;
+  int coughingDuration;
+  int physicalDuration;
+  int hyperventilatingDuration;
+  int otherDuration;
+
+  ActivityData({
+    required this.overallDuration,
+    required this.breathinDuration,
+    required this.coughingDuration,
+    required this.physicalDuration,
+    required this.hyperventilatingDuration,
+    required this.otherDuration,
+  });
+}
+
+List<String> respiratoryClasses = [
+  'Breathing Normal',
+  'Coughing',
+  'Hyperventilating',
+  'Other',
+];
+
 List<String> physicalClasses5 = [
   'Lying down on back',
   'Lying down on left',
@@ -64,10 +89,10 @@ List<String> allClasses = [
   'Normal walking',
   'Running',
   'Shuffle walking',
-  'Sitting/standing : Breathing Normal',
-  'Sitting/standing : Coughing',
-  'Sitting/standing : Hyperventilating',
-  'Sitting/standing : Other'
+  'Sitting/standing - Breathing Normal',
+  'Sitting/standing - Coughing',
+  'Sitting/standing - Hyperventilating',
+  'Sitting/standing - Other'
 ];
 
 List<Activity> activities = [
@@ -143,11 +168,4 @@ List<String> combinedClasses = [
   'Sitting/standing_Coughing',
   'Sitting/standing_Hyperventilating',
   'Sitting/standing_Other'
-];
-
-List<String> respiratoryClasses = [
-  'Breathing Normal',
-  'Coughing',
-  'Hyperventilating',
-  'Other',
 ];
