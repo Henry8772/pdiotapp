@@ -299,7 +299,7 @@ class _HomePageState extends State<HomePage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                          "Model ${modelToString(selectedModel)} is loaded"),
+                          "${modelToString(selectedModel)} model is loaded"),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -309,7 +309,7 @@ class _HomePageState extends State<HomePage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                      "Model ${modelToString(selectedModel)} is already loaded"),
+                      "${modelToString(selectedModel)} model is already loaded"),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -343,7 +343,7 @@ class _HomePageState extends State<HomePage> {
           Text(
             loadedModel == ModelType.unloaded
                 ? 'No model is loaded'
-                : '${modelToString(loadedModel)} Model is loaded',
+                : '${modelToString(loadedModel)} model is loaded',
           ),
           SizedBox(height: 10),
           modelSelectionAndLoad(),
