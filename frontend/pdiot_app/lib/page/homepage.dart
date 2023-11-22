@@ -351,6 +351,10 @@ class _HomePageState extends State<HomePage> {
             loadedModel == ModelType.unloaded
                 ? 'No model is loaded'
                 : '${modelToString(loadedModel)} model is loaded',
+            style: TextStyle(
+              fontSize: 16,
+              // You can add other styling properties as needed
+            ),
           ),
           SizedBox(height: 10),
           modelSelectionAndLoad(),

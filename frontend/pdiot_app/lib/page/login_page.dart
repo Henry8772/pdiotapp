@@ -173,43 +173,6 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Username'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                login();
-                // _controller.login(
-                //     _usernameController.text, _usernameController.text);
-                // Get.back();
-              },
-              child: const Text('Login'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                register();
-                // _controller.register(
-                //     _usernameController.text, _usernameController.text);
-                // Get.back();
-              },
-              child: const Text('Register'),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget loginWidget() {
@@ -232,7 +195,7 @@ class _LoginPageState extends State<LoginPage> {
               style: titleStyle,
               decoration: InputDecoration(
                   hintText: 'Enter your username',
-                  hintStyle: TextStyle(
+                  hintStyle: const TextStyle(
                       fontWeight: FontWeight.w400,
                       fontSize: 16,
                       color: Color(0xffD7D8DB)),
@@ -251,7 +214,7 @@ class _LoginPageState extends State<LoginPage> {
             'Password',
             style: titleStyle,
           ),
-          SizedBox(
+          const SizedBox(
             height: 8,
           ),
           SizedBox(
@@ -259,9 +222,12 @@ class _LoginPageState extends State<LoginPage> {
             child: TextField(
               controller: _passwordController,
               style: titleStyle,
+              obscureText: true,
+              enableSuggestions: false,
+              autocorrect: false,
               decoration: InputDecoration(
                   hintText: 'Please enter password',
-                  hintStyle: TextStyle(
+                  hintStyle: const TextStyle(
                       fontWeight: FontWeight.w400,
                       fontSize: 16,
                       color: Color(0xffD7D8DB)),
@@ -273,7 +239,7 @@ class _LoginPageState extends State<LoginPage> {
                       borderSide: BorderSide.none)),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 31,
           ),
           GestureDetector(
@@ -347,6 +313,9 @@ class _LoginPageState extends State<LoginPage> {
           SizedBox(
             height: 48,
             child: TextField(
+              obscureText: true,
+              enableSuggestions: false,
+              autocorrect: false,
               controller: _passwordController,
               style: titleStyle,
               decoration: InputDecoration(
