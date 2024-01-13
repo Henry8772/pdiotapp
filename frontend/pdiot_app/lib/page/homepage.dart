@@ -79,44 +79,81 @@ class _HomePageState extends State<HomePage> {
     startTime = DateTime.now();
     isRecording = true;
 
-    _dataSubscription = BluetoothConnect().dataStream.listen((data) async {
-      if (!mounted) return;
-
+    Timer.periodic(Duration(seconds: 1), (Timer t) {
+      String resultString = processRandomModelResult();
       setState(() {
-        chartAccData
-            .add(SensorData(counter, data['accX'], data['accY'], data['accZ']));
-        chartGyroData.add(
-            SensorData(counter, data['gyroX'], data['gyroY'], data['gyroZ']));
+        currentActivity = resultString;
       });
-      counter += 1;
-
-      acc.add(Float32List.fromList([data['accX'], data['accY'], data['accZ']]));
-
-      gyro.add(
-          Float32List.fromList([data['gyroX'], data['gyroY'], data['gyroZ']]));
-
-      if (acc.length % 25 == 0 && acc.length >= 50) {
-        List<Float32List> last2SecData = acc.sublist(acc.length - 50);
-
-        List<Float32List> last2SecGyroData = gyro.sublist(gyro.length - 50);
-
-        Map<ModelType, String> result = await CustomModel()
-            .performInference(last2SecData, last2SecGyroData);
-        // String result = await CustomModel()
-        //     .performInference(last2SecData, last2SecAllData, last2SecGyroData);
-        String resultString = processModelResult(result);
-        // String physicalAct = result[ModelType.physical]!;
-        setState(() {
-          currentActivity = resultString;
-        });
-        if (currentSessionActivities[resultString] == null) {
-          currentSessionActivities[resultString] = 1;
-        } else {
-          currentSessionActivities[resultString] =
-              currentSessionActivities[resultString]! + 1;
-        }
+      if (currentSessionActivities[resultString] == null) {
+        currentSessionActivities[resultString] = 1;
+      } else {
+        currentSessionActivities[resultString] =
+            currentSessionActivities[resultString]! + 1;
       }
     });
+  }
+
+  // void startRecording() {
+  //   startTime = DateTime.now();
+  //   isRecording = true;
+
+  //   _dataSubscription = BluetoothConnect().dataStream.listen((data) async {
+  //     if (!mounted) return;
+
+  //     setState(() {
+  //       chartAccData
+  //           .add(SensorData(counter, data['accX'], data['accY'], data['accZ']));
+  //       chartGyroData.add(
+  //           SensorData(counter, data['gyroX'], data['gyroY'], data['gyroZ']));
+  //     });
+  //     counter += 1;
+
+  //     acc.add(Float32List.fromList([data['accX'], data['accY'], data['accZ']]));
+
+  //     gyro.add(
+  //         Float32List.fromList([data['gyroX'], data['gyroY'], data['gyroZ']]));
+
+  //     if (acc.length % 25 == 0 && acc.length >= 50) {
+  //       List<Float32List> last2SecData = acc.sublist(acc.length - 50);
+
+  //       List<Float32List> last2SecGyroData = gyro.sublist(gyro.length - 50);
+
+  //       Map<ModelType, String> result = await CustomModel()
+  //           .performInference(last2SecData, last2SecGyroData);
+  //       // String result = await CustomModel()
+  //       //     .performInference(last2SecData, last2SecAllData, last2SecGyroData);
+  //       String resultString = processModelResult(result);
+  //       // String physicalAct = result[ModelType.physical]!;
+  //       setState(() {
+  //         currentActivity = resultString;
+  //       });
+  //       if (currentSessionActivities[resultString] == null) {
+  //         currentSessionActivities[resultString] = 1;
+  //       } else {
+  //         currentSessionActivities[resultString] =
+  //             currentSessionActivities[resultString]! + 1;
+  //       }
+  //     }
+  //   });
+  // }
+
+  String processRandomModelResult() {
+    Random random = Random();
+
+    // Assuming physicalClassesWithRespiratory and respiratoryClasses are lists
+    String randomPhysicalAct = '';
+    String randomRespiratoryAct = '';
+
+    if (physicalClassesWithRespiratory.isNotEmpty) {
+      randomPhysicalAct = physicalClassesWithRespiratory[
+          random.nextInt(physicalClassesWithRespiratory.length)];
+    }
+
+    if (respiratoryClasses.isNotEmpty) {
+      randomRespiratoryAct =
+          respiratoryClasses[random.nextInt(respiratoryClasses.length)];
+    }
+    return "$randomPhysicalAct - $randomRespiratoryAct";
   }
 
   String processModelResult(Map<ModelType, String> result) {
@@ -149,7 +186,7 @@ class _HomePageState extends State<HomePage> {
   void stopRecording() async {
     counter = 0;
     isRecording = false;
-    _dataSubscription.cancel();
+    // _dataSubscription.cancel();
     await saveSessionToDatabase(currentSessionActivities, startTime);
     currentSessionActivities.clear();
   }
